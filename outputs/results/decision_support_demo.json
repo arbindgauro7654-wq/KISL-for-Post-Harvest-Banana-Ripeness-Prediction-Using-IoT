@@ -1,0 +1,289 @@
+[
+  {
+    "predicted_stage": 3,
+    "stage_label": "Stage 3 - Half ripe (yellow-green)",
+    "confidence": 1.0,
+    "class_probabilities": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 1.0,
+      "4": 0.0,
+      "5": 0.0
+    },
+    "fired_rules": [
+      {
+        "rule_id": "R5",
+        "text": "Humid-int > 71.52 -> slows moisture_loss",
+        "predicate": "slows",
+        "object": "moisture_loss",
+        "subject": "Humid-int",
+        "op": ">",
+        "expected_dir": "positive",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R7",
+        "text": "Humid-ext > 64.73 -> slows moisture_loss",
+        "predicate": "slows",
+        "object": "moisture_loss",
+        "subject": "Humid-ext",
+        "op": ">",
+        "expected_dir": "positive",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R14",
+        "text": "Both temperatures high: fast ripening",
+        "predicate": "causes",
+        "object": "fast_ripening",
+        "expected_dir": "positive",
+        "source": "[6]"
+      }
+    ],
+    "recommendations": [
+      "Half ripe - move toward display soon.",
+      "Humidity is affecting moisture loss - manage ventilation and humidity to protect fruit quality and weight.  (rule R5 [1])",
+      "Both internal and ambient temperatures are high - expect fast ripening; prioritise dispatch or cool storage.  (rule R14 [6])"
+    ],
+    "true_stage": 3
+  },
+  {
+    "predicted_stage": 2,
+    "stage_label": "Stage 2 - Turning (more green than yellow)",
+    "confidence": 0.9849,
+    "class_probabilities": {
+      "1": 0.0,
+      "2": 0.9849,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0151
+    },
+    "fired_rules": [
+      {
+        "rule_id": "R3",
+        "text": "Temp-ext > 20.00 -> accelerates ripening",
+        "predicate": "accelerates",
+        "object": "ripening",
+        "subject": "Temp-ext",
+        "op": ">",
+        "expected_dir": "positive",
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R6",
+        "text": "Humid-int < 55.64 -> increases moisture_loss",
+        "predicate": "increases",
+        "object": "moisture_loss",
+        "subject": "Humid-int",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R8",
+        "text": "Humid-ext < 48.97 -> increases moisture_loss",
+        "predicate": "increases",
+        "object": "moisture_loss",
+        "subject": "Humid-ext",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R14",
+        "text": "Both temperatures high: fast ripening",
+        "predicate": "causes",
+        "object": "fast_ripening",
+        "expected_dir": "positive",
+        "source": "[6]"
+      }
+    ],
+    "recommendations": [
+      "Beginning to turn - hold or begin controlled ripening.",
+      "Ripening is being driven by current temperature - adjust storage temperature to control speed.  (rule R3 [6])",
+      "Humidity is affecting moisture loss - manage ventilation and humidity to protect fruit quality and weight.  (rule R6 [1])",
+      "Both internal and ambient temperatures are high - expect fast ripening; prioritise dispatch or cool storage.  (rule R14 [6])"
+    ],
+    "true_stage": 2
+  },
+  {
+    "predicted_stage": 2,
+    "stage_label": "Stage 2 - Turning (more green than yellow)",
+    "confidence": 1.0,
+    "class_probabilities": {
+      "1": 0.0,
+      "2": 1.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0
+    },
+    "fired_rules": [
+      {
+        "rule_id": "R5",
+        "text": "Humid-int > 71.52 -> slows moisture_loss",
+        "predicate": "slows",
+        "object": "moisture_loss",
+        "subject": "Humid-int",
+        "op": ">",
+        "expected_dir": "positive",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R9",
+        "text": "Press-int > 1002.53 -> associated_with atmosphere_state",
+        "predicate": "associated_with",
+        "object": "atmosphere_state",
+        "subject": "Press-int",
+        "op": ">",
+        "expected_dir": "neutral",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R11",
+        "text": "Press-ext > 1002.70 -> associated_with atmosphere_state",
+        "predicate": "associated_with",
+        "object": "atmosphere_state",
+        "subject": "Press-ext",
+        "op": ">",
+        "expected_dir": "neutral",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R14",
+        "text": "Both temperatures high: fast ripening",
+        "predicate": "causes",
+        "object": "fast_ripening",
+        "expected_dir": "positive",
+        "source": "[6]"
+      }
+    ],
+    "recommendations": [
+      "Beginning to turn - hold or begin controlled ripening.",
+      "Humidity is affecting moisture loss - manage ventilation and humidity to protect fruit quality and weight.  (rule R5 [1])",
+      "Atmospheric pressure shift noted - monitor sealed-store conditions.  (rule R9 [1])",
+      "Both internal and ambient temperatures are high - expect fast ripening; prioritise dispatch or cool storage.  (rule R14 [6])"
+    ],
+    "true_stage": 2
+  },
+  {
+    "predicted_stage": 3,
+    "stage_label": "Stage 3 - Half ripe (yellow-green)",
+    "confidence": 1.0,
+    "class_probabilities": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 1.0,
+      "4": 0.0,
+      "5": 0.0
+    },
+    "fired_rules": [
+      {
+        "rule_id": "R2",
+        "text": "Temp-int < 13.00 -> slows ripening",
+        "predicate": "slows",
+        "object": "ripening",
+        "subject": "Temp-int",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R4",
+        "text": "Temp-ext < 13.15 -> slows ripening",
+        "predicate": "slows",
+        "object": "ripening",
+        "subject": "Temp-ext",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R6",
+        "text": "Humid-int < 55.64 -> increases moisture_loss",
+        "predicate": "increases",
+        "object": "moisture_loss",
+        "subject": "Humid-int",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R10",
+        "text": "Press-int < 981.87 -> associated_with atmosphere_state",
+        "predicate": "associated_with",
+        "object": "atmosphere_state",
+        "subject": "Press-int",
+        "op": "<",
+        "expected_dir": "neutral",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R12",
+        "text": "Press-ext < 982.28 -> associated_with atmosphere_state",
+        "predicate": "associated_with",
+        "object": "atmosphere_state",
+        "subject": "Press-ext",
+        "op": "<",
+        "expected_dir": "neutral",
+        "source": "[1]"
+      }
+    ],
+    "recommendations": [
+      "Half ripe - move toward display soon.",
+      "Ripening is being driven by current temperature - adjust storage temperature to control speed.  (rule R2 [1])",
+      "Humidity is affecting moisture loss - manage ventilation and humidity to protect fruit quality and weight.  (rule R6 [1])",
+      "Atmospheric pressure shift noted - monitor sealed-store conditions.  (rule R10 [1])"
+    ],
+    "true_stage": 3
+  },
+  {
+    "predicted_stage": 1,
+    "stage_label": "Stage 1 - Green (hard, starchy)",
+    "confidence": 1.0,
+    "class_probabilities": {
+      "1": 1.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0
+    },
+    "fired_rules": [
+      {
+        "rule_id": "R2",
+        "text": "Temp-int < 13.00 -> slows ripening",
+        "predicate": "slows",
+        "object": "ripening",
+        "subject": "Temp-int",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R4",
+        "text": "Temp-ext < 13.15 -> slows ripening",
+        "predicate": "slows",
+        "object": "ripening",
+        "subject": "Temp-ext",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R6",
+        "text": "Humid-int < 55.64 -> increases moisture_loss",
+        "predicate": "increases",
+        "object": "moisture_loss",
+        "subject": "Humid-int",
+        "op": "<",
+        "expected_dir": "negative",
+        "source": "[1]"
+      }
+    ],
+    "recommendations": [
+      "Green and starchy - suitable for long storage / shipping.",
+      "Ripening is being driven by current temperature - adjust storage temperature to control speed.  (rule R2 [1])",
+      "Humidity is affecting moisture loss - manage ventilation and humidity to protect fruit quality and weight.  (rule R6 [1])"
+    ],
+    "true_stage": 1
+  }
+]

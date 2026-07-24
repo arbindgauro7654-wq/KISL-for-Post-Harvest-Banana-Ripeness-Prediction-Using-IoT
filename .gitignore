@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.egg-info/
+dist/
+build/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+~$*
+*.tmp
+
+# Large model binaries — regenerate with: py -m src.run_pipeline
+outputs/models/*.pkl
+
+# Duplicate KG export (regenerated under data/kg/)
+outputs/kg/

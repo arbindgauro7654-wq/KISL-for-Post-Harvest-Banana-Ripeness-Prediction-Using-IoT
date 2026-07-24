@@ -1,0 +1,16 @@
+subject,object,predicate,rule_id,source,expected_dir
+Temp-int > threshold,ripening,accelerates,R1,[6],positive
+Temp-int < threshold,ripening,slows,R2,[1],negative
+Temp-ext > threshold,ripening,accelerates,R3,[6],positive
+Temp-ext < threshold,ripening,slows,R4,[6],negative
+Humid-int > threshold,moisture_loss,slows,R5,[1],positive
+Humid-int < threshold,moisture_loss,increases,R6,[1],negative
+Humid-ext > threshold,moisture_loss,slows,R7,[1],positive
+Humid-ext < threshold,moisture_loss,increases,R8,[1],negative
+Press-int > threshold,atmosphere_state,associated_with,R9,[1],neutral
+Press-int < threshold,atmosphere_state,associated_with,R10,[1],neutral
+Press-ext > threshold,atmosphere_state,associated_with,R11,[1],neutral
+Press-ext < threshold,atmosphere_state,associated_with,R12,[1],neutral
+Warm & dry: rapid quality loss,rapid_quality_loss,causes,R13,"[1],[6]",positive
+Both temperatures high: fast ripening,fast_ripening,causes,R14,[6],positive
+Cool & humid: extended shelf life,long_shelf_life,supports,R15,[1],negative

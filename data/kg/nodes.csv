@@ -1,0 +1,22 @@
+node,kind
+Temp-int > threshold,condition
+ripening,concept
+Temp-int < threshold,condition
+Temp-ext > threshold,condition
+Temp-ext < threshold,condition
+Humid-int > threshold,condition
+moisture_loss,concept
+Humid-int < threshold,condition
+Humid-ext > threshold,condition
+Humid-ext < threshold,condition
+Press-int > threshold,condition
+atmosphere_state,concept
+Press-int < threshold,condition
+Press-ext > threshold,condition
+Press-ext < threshold,condition
+Warm & dry: rapid quality loss,condition
+rapid_quality_loss,concept
+Both temperatures high: fast ripening,condition
+fast_ripening,concept
+Cool & humid: extended shelf life,condition
+long_shelf_life,concept

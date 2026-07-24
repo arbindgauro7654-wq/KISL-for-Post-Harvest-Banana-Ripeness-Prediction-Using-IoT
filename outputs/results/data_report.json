@@ -1,0 +1,44 @@
+{
+  "n_train": 18819,
+  "n_test": 8066,
+  "features": [
+    "Temp-int",
+    "Humid-int",
+    "Press-int",
+    "Temp-ext",
+    "Humid-ext",
+    "Press-ext"
+  ],
+  "class_distribution_train": {
+    "1": 3764,
+    "2": 3764,
+    "3": 3764,
+    "4": 3764,
+    "5": 3763
+  },
+  "class_distribution_test": {
+    "1": 1613,
+    "2": 1613,
+    "3": 1613,
+    "4": 1613,
+    "5": 1614
+  },
+  "range_violations_train": {
+    "Temp-int": 0,
+    "Temp-ext": 0,
+    "Humid-int": 0,
+    "Humid-ext": 0,
+    "Press-int": 0,
+    "Press-ext": 0
+  },
+  "zscore_outliers_train": {
+    "Temp-int": 0,
+    "Humid-int": 0,
+    "Press-int": 7,
+    "Temp-ext": 0,
+    "Humid-ext": 0,
+    "Press-ext": 9
+  },
+  "min_class_fraction": 0.19995748977097613,
+  "smote_applied": false
+}

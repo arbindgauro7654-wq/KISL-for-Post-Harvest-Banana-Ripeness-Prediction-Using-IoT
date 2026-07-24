@@ -1,0 +1,21 @@
+Knowledge Graph summary
+=======================
+Nodes: 21
+Edges (triples): 15
+
+Triples:
+  [R1] (Temp-int > threshold) -[accelerates]-> (ripening)  [6]
+  [R2] (Temp-int < threshold) -[slows]-> (ripening)  [1]
+  [R3] (Temp-ext > threshold) -[accelerates]-> (ripening)  [6]
+  [R4] (Temp-ext < threshold) -[slows]-> (ripening)  [6]
+  [R5] (Humid-int > threshold) -[slows]-> (moisture_loss)  [1]
+  [R6] (Humid-int < threshold) -[increases]-> (moisture_loss)  [1]
+  [R7] (Humid-ext > threshold) -[slows]-> (moisture_loss)  [1]
+  [R8] (Humid-ext < threshold) -[increases]-> (moisture_loss)  [1]
+  [R9] (Press-int > threshold) -[associated_with]-> (atmosphere_state)  [1]
+  [R10] (Press-int < threshold) -[associated_with]-> (atmosphere_state)  [1]
+  [R11] (Press-ext > threshold) -[associated_with]-> (atmosphere_state)  [1]
+  [R12] (Press-ext < threshold) -[associated_with]-> (atmosphere_state)  [1]
+  [R13] (Warm & dry: rapid quality loss) -[causes]-> (rapid_quality_loss)  [1],[6]
+  [R14] (Both temperatures high: fast ripening) -[causes]-> (fast_ripening)  [6]
+  [R15] (Cool & humid: extended shelf life) -[supports]-> (long_shelf_life)  [1]

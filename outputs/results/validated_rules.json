@@ -1,0 +1,191 @@
+[
+  {
+    "rule_id": "R1",
+    "activation_rate": 0.0783,
+    "p_value": 2.339876543204412e-279,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 20.0,
+    "predicate": "accelerates",
+    "object": "ripening",
+    "expected_dir": "positive",
+    "source": "[6]"
+  },
+  {
+    "rule_id": "R2",
+    "activation_rate": 0.1791,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 13.0,
+    "predicate": "slows",
+    "object": "ripening",
+    "expected_dir": "negative",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R3",
+    "activation_rate": 0.078,
+    "p_value": 1.1797104134169466e-238,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 20.0,
+    "predicate": "accelerates",
+    "object": "ripening",
+    "expected_dir": "positive",
+    "source": "[6]"
+  },
+  {
+    "rule_id": "R4",
+    "activation_rate": 0.2499,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 13.15,
+    "predicate": "slows",
+    "object": "ripening",
+    "expected_dir": "negative",
+    "source": "[6]"
+  },
+  {
+    "rule_id": "R5",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 71.521012515748,
+    "predicate": "slows",
+    "object": "moisture_loss",
+    "expected_dir": "positive",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R6",
+    "activation_rate": 0.25,
+    "p_value": 3.439191324732486e-296,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 55.63874548391918,
+    "predicate": "increases",
+    "object": "moisture_loss",
+    "expected_dir": "negative",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R7",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 64.7297155819227,
+    "predicate": "slows",
+    "object": "moisture_loss",
+    "expected_dir": "positive",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R8",
+    "activation_rate": 0.25,
+    "p_value": 4.555391519700763e-131,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 48.96823221240534,
+    "predicate": "increases",
+    "object": "moisture_loss",
+    "expected_dir": "negative",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R9",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 1002.5263106420248,
+    "predicate": "associated_with",
+    "object": "atmosphere_state",
+    "expected_dir": "neutral",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R10",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 981.8692867028916,
+    "predicate": "associated_with",
+    "object": "atmosphere_state",
+    "expected_dir": "neutral",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R11",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 1002.6998446409724,
+    "predicate": "associated_with",
+    "object": "atmosphere_state",
+    "expected_dir": "neutral",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R12",
+    "activation_rate": 0.25,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": 982.2839069751669,
+    "predicate": "associated_with",
+    "object": "atmosphere_state",
+    "expected_dir": "neutral",
+    "source": "[1]"
+  },
+  {
+    "rule_id": "R13",
+    "activation_rate": 0.0281,
+    "p_value": null,
+    "accepted": false,
+    "reason": "activation 0.028 < 0.05",
+    "threshold": [
+      17.98,
+      55.63874548391918
+    ],
+    "predicate": "causes",
+    "object": "rapid_quality_loss",
+    "expected_dir": "positive",
+    "source": "[1],[6]"
+  },
+  {
+    "rule_id": "R14",
+    "activation_rate": 0.2328,
+    "p_value": 0.0,
+    "accepted": true,
+    "reason": "accepted",
+    "threshold": [
+      17.98,
+      17.567555220671338
+    ],
+    "predicate": "causes",
+    "object": "fast_ripening",
+    "expected_dir": "positive",
+    "source": "[6]"
+  },
+  {
+    "rule_id": "R15",
+    "activation_rate": 0.0131,
+    "p_value": null,
+    "accepted": false,
+    "reason": "activation 0.013 < 0.05",
+    "threshold": [
+      13.645111418152652,
+      71.521012515748
+    ],
+    "predicate": "supports",
+    "object": "long_shelf_life",
+    "expected_dir": "negative",
+    "source": "[1]"
+  }
+]

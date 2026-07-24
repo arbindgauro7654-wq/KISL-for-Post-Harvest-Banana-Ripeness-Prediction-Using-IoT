@@ -1,0 +1,73 @@
+{
+  "kg_rf": {
+    "alignment_score": 0.3333,
+    "checked": 9,
+    "aligned": 3,
+    "median_importance_threshold": 0.008316,
+    "details": [
+      {
+        "rule_id": "R1",
+        "expected_dir": "positive",
+        "flag_importance": 0.000842,
+        "aligned": false,
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R2",
+        "expected_dir": "negative",
+        "flag_importance": 0.002357,
+        "aligned": false,
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R3",
+        "expected_dir": "positive",
+        "flag_importance": 0.0006,
+        "aligned": false,
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R4",
+        "expected_dir": "negative",
+        "flag_importance": 0.003158,
+        "aligned": false,
+        "source": "[6]"
+      },
+      {
+        "rule_id": "R5",
+        "expected_dir": "positive",
+        "flag_importance": 0.012536,
+        "aligned": true,
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R6",
+        "expected_dir": "negative",
+        "flag_importance": 0.014114,
+        "aligned": true,
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R7",
+        "expected_dir": "positive",
+        "flag_importance": 0.008412,
+        "aligned": true,
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R8",
+        "expected_dir": "negative",
+        "flag_importance": 0.005793,
+        "aligned": false,
+        "source": "[1]"
+      },
+      {
+        "rule_id": "R14",
+        "expected_dir": "positive",
+        "flag_importance": 0.00326,
+        "aligned": false,
+        "source": "[6]"
+      }
+    ]
+  }
+}

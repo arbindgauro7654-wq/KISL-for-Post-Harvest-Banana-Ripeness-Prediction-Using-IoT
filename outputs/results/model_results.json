@@ -1,0 +1,462 @@
+{
+  "data_report": {
+    "n_train": 18819,
+    "n_test": 8066,
+    "features": [
+      "Temp-int",
+      "Humid-int",
+      "Press-int",
+      "Temp-ext",
+      "Humid-ext",
+      "Press-ext"
+    ],
+    "class_distribution_train": {
+      "1": 3764,
+      "2": 3764,
+      "3": 3764,
+      "4": 3764,
+      "5": 3763
+    },
+    "class_distribution_test": {
+      "1": 1613,
+      "2": 1613,
+      "3": 1613,
+      "4": 1613,
+      "5": 1614
+    },
+    "range_violations_train": {
+      "Temp-int": 0,
+      "Temp-ext": 0,
+      "Humid-int": 0,
+      "Humid-ext": 0,
+      "Press-int": 0,
+      "Press-ext": 0
+    },
+    "zscore_outliers_train": {
+      "Temp-int": 0,
+      "Humid-int": 0,
+      "Press-int": 7,
+      "Temp-ext": 0,
+      "Humid-ext": 0,
+      "Press-ext": 9
+    },
+    "min_class_fraction": 0.19995748977097613,
+    "smote_applied": false
+  },
+  "feature_summary": {
+    "min": {
+      "Temp-int": 9.44,
+      "Humid-int": 48.75,
+      "Press-int": 937.15,
+      "Temp-ext": 8.84,
+      "Humid-ext": 23.957,
+      "Press-ext": 937.3
+    },
+    "max": {
+      "Temp-int": 23.949,
+      "Humid-int": 81.61,
+      "Press-int": 1018.43,
+      "Temp-ext": 26.64,
+      "Humid-ext": 91.029,
+      "Press-ext": 1018.73
+    },
+    "mean": {
+      "Temp-int": 15.828,
+      "Humid-int": 63.259,
+      "Press-int": 990.977,
+      "Temp-ext": 15.481,
+      "Humid-ext": 56.733,
+      "Press-ext": 991.375
+    },
+    "std": {
+      "Temp-int": 2.819,
+      "Humid-int": 8.047,
+      "Press-int": 13.314,
+      "Temp-ext": 3.047,
+      "Humid-ext": 11.69,
+      "Press-ext": 13.255
+    }
+  },
+  "models": {
+    "baseline_rf": {
+      "is_kg": false,
+      "cv": {
+        "best_params": {
+          "max_depth": 20,
+          "min_samples_leaf": 1,
+          "n_estimators": 200
+        },
+        "cv_best_macro_f1": 0.9893,
+        "n_features": 6,
+        "feature_names": [
+          "Temp-int",
+          "Humid-int",
+          "Press-int",
+          "Temp-ext",
+          "Humid-ext",
+          "Press-ext"
+        ]
+      },
+      "train": {
+        "accuracy": 1.0,
+        "macro_f1": 1.0,
+        "weighted_precision": 1.0,
+        "weighted_recall": 1.0
+      },
+      "test": {
+        "accuracy": 0.9924,
+        "macro_f1": 0.9924,
+        "weighted_precision": 0.9924,
+        "weighted_recall": 0.9924
+      }
+    },
+    "kg_rf": {
+      "is_kg": true,
+      "cv": {
+        "best_params": {
+          "max_depth": 20,
+          "min_samples_leaf": 1,
+          "n_estimators": 200
+        },
+        "cv_best_macro_f1": 0.9859,
+        "n_features": 32,
+        "feature_names": [
+          "Temp-int",
+          "Humid-int",
+          "Press-int",
+          "Temp-ext",
+          "Humid-ext",
+          "Press-ext",
+          "flag_R1",
+          "risk_R1",
+          "flag_R2",
+          "risk_R2",
+          "flag_R3",
+          "risk_R3",
+          "flag_R4",
+          "risk_R4",
+          "flag_R5",
+          "risk_R5",
+          "flag_R6",
+          "risk_R6",
+          "flag_R7",
+          "risk_R7",
+          "flag_R8",
+          "risk_R8",
+          "flag_R9",
+          "risk_R9",
+          "flag_R10",
+          "risk_R10",
+          "flag_R11",
+          "risk_R11",
+          "flag_R12",
+          "risk_R12",
+          "flag_R14",
+          "kg_violation_count"
+        ]
+      },
+      "train": {
+        "accuracy": 0.9999,
+        "macro_f1": 0.9999,
+        "weighted_precision": 0.9999,
+        "weighted_recall": 0.9999
+      },
+      "test": {
+        "accuracy": 0.9906,
+        "macro_f1": 0.9906,
+        "weighted_precision": 0.9906,
+        "weighted_recall": 0.9906
+      }
+    },
+    "baseline_xgb": {
+      "is_kg": false,
+      "cv": {
+        "best_params": {
+          "learning_rate": 0.3,
+          "max_depth": 6,
+          "n_estimators": 300
+        },
+        "cv_best_macro_f1": 0.9897,
+        "n_features": 6,
+        "feature_names": [
+          "Temp-int",
+          "Humid-int",
+          "Press-int",
+          "Temp-ext",
+          "Humid-ext",
+          "Press-ext"
+        ]
+      },
+      "train": {
+        "accuracy": 1.0,
+        "macro_f1": 1.0,
+        "weighted_precision": 1.0,
+        "weighted_recall": 1.0
+      },
+      "test": {
+        "accuracy": 0.9927,
+        "macro_f1": 0.9927,
+        "weighted_precision": 0.9927,
+        "weighted_recall": 0.9927
+      }
+    },
+    "kg_xgb": {
+      "is_kg": true,
+      "cv": {
+        "best_params": {
+          "learning_rate": 0.3,
+          "max_depth": 6,
+          "n_estimators": 300
+        },
+        "cv_best_macro_f1": 0.9893,
+        "n_features": 32,
+        "feature_names": [
+          "Temp-int",
+          "Humid-int",
+          "Press-int",
+          "Temp-ext",
+          "Humid-ext",
+          "Press-ext",
+          "flag_R1",
+          "risk_R1",
+          "flag_R2",
+          "risk_R2",
+          "flag_R3",
+          "risk_R3",
+          "flag_R4",
+          "risk_R4",
+          "flag_R5",
+          "risk_R5",
+          "flag_R6",
+          "risk_R6",
+          "flag_R7",
+          "risk_R7",
+          "flag_R8",
+          "risk_R8",
+          "flag_R9",
+          "risk_R9",
+          "flag_R10",
+          "risk_R10",
+          "flag_R11",
+          "risk_R11",
+          "flag_R12",
+          "risk_R12",
+          "flag_R14",
+          "kg_violation_count"
+        ]
+      },
+      "train": {
+        "accuracy": 1.0,
+        "macro_f1": 1.0,
+        "weighted_precision": 1.0,
+        "weighted_recall": 1.0
+      },
+      "test": {
+        "accuracy": 0.9932,
+        "macro_f1": 0.9932,
+        "weighted_precision": 0.9932,
+        "weighted_recall": 0.9932
+      }
+    }
+  },
+  "mcnemar": {
+    "rf_baseline_vs_kg": {
+      "b": 34,
+      "c": 19,
+      "statistic": 3.6981,
+      "p_value": 0.054474,
+      "significant": false
+    },
+    "xgb_baseline_vs_kg": {
+      "b": 9,
+      "c": 13,
+      "statistic": 0.4091,
+      "p_value": 0.522431,
+      "significant": false
+    }
+  },
+  "rq2_alignment": {
+    "kg_rf": {
+      "alignment_score": 0.3333,
+      "checked": 9,
+      "aligned": 3,
+      "median_importance_threshold": 0.008316,
+      "details": [
+        {
+          "rule_id": "R1",
+          "expected_dir": "positive",
+          "flag_importance": 0.000842,
+          "aligned": false,
+          "source": "[6]"
+        },
+        {
+          "rule_id": "R2",
+          "expected_dir": "negative",
+          "flag_importance": 0.002357,
+          "aligned": false,
+          "source": "[1]"
+        },
+        {
+          "rule_id": "R3",
+          "expected_dir": "positive",
+          "flag_importance": 0.0006,
+          "aligned": false,
+          "source": "[6]"
+        },
+        {
+          "rule_id": "R4",
+          "expected_dir": "negative",
+          "flag_importance": 0.003158,
+          "aligned": false,
+          "source": "[6]"
+        },
+        {
+          "rule_id": "R5",
+          "expected_dir": "positive",
+          "flag_importance": 0.012536,
+          "aligned": true,
+          "source": "[1]"
+        },
+        {
+          "rule_id": "R6",
+          "expected_dir": "negative",
+          "flag_importance": 0.014114,
+          "aligned": true,
+          "source": "[1]"
+        },
+        {
+          "rule_id": "R7",
+          "expected_dir": "positive",
+          "flag_importance": 0.008412,
+          "aligned": true,
+          "source": "[1]"
+        },
+        {
+          "rule_id": "R8",
+          "expected_dir": "negative",
+          "flag_importance": 0.005793,
+          "aligned": false,
+          "source": "[1]"
+        },
+        {
+          "rule_id": "R14",
+          "expected_dir": "positive",
+          "flag_importance": 0.00326,
+          "aligned": false,
+          "source": "[6]"
+        }
+      ]
+    }
+  },
+  "robustness": {
+    "kg_rf": {
+      "clean_macro_f1": 0.9906,
+      "noise": {
+        "5%": {
+          "macro_f1": 0.6699,
+          "pct_of_clean": 67.6
+        },
+        "10%": {
+          "macro_f1": 0.4599,
+          "pct_of_clean": 46.4
+        },
+        "20%": {
+          "macro_f1": 0.2894,
+          "pct_of_clean": 29.2
+        }
+      },
+      "missing": {
+        "5%": {
+          "macro_f1": 0.9473,
+          "pct_of_clean": 95.6
+        },
+        "10%": {
+          "macro_f1": 0.8979,
+          "pct_of_clean": 90.6
+        },
+        "20%": {
+          "macro_f1": 0.792,
+          "pct_of_clean": 80.0
+        }
+      },
+      "sensor_failure": {
+        "macro_f1": 0.8324,
+        "pct_of_clean": 84.0,
+        "description": "Temp-int and Temp-ext set to train median (dual failure)"
+      }
+    },
+    "baseline_rf": {
+      "clean_macro_f1": 0.9924,
+      "noise": {
+        "5%": {
+          "macro_f1": 0.6505,
+          "pct_of_clean": 65.6
+        },
+        "10%": {
+          "macro_f1": 0.4297,
+          "pct_of_clean": 43.3
+        },
+        "20%": {
+          "macro_f1": 0.2597,
+          "pct_of_clean": 26.2
+        }
+      },
+      "missing": {
+        "5%": {
+          "macro_f1": 0.9369,
+          "pct_of_clean": 94.4
+        },
+        "10%": {
+          "macro_f1": 0.8836,
+          "pct_of_clean": 89.0
+        },
+        "20%": {
+          "macro_f1": 0.7606,
+          "pct_of_clean": 76.6
+        }
+      },
+      "sensor_failure": {
+        "macro_f1": 0.7228,
+        "pct_of_clean": 72.8,
+        "description": "Temp-int and Temp-ext set to train median (dual failure)"
+      }
+    }
+  },
+  "best_model": {
+    "name": "kg_xgb",
+    "is_kg": true
+  },
+  "kg": {
+    "n_rules_total": 15,
+    "n_rules_accepted": 13,
+    "feature_names": [
+      "flag_R1",
+      "risk_R1",
+      "flag_R2",
+      "risk_R2",
+      "flag_R3",
+      "risk_R3",
+      "flag_R4",
+      "risk_R4",
+      "flag_R5",
+      "risk_R5",
+      "flag_R6",
+      "risk_R6",
+      "flag_R7",
+      "risk_R7",
+      "flag_R8",
+      "risk_R8",
+      "flag_R9",
+      "risk_R9",
+      "flag_R10",
+      "risk_R10",
+      "flag_R11",
+      "risk_R11",
+      "flag_R12",
+      "risk_R12",
+      "flag_R14",
+      "kg_violation_count"
+    ]
+  },
+  "runtime_seconds": 350.9
+}

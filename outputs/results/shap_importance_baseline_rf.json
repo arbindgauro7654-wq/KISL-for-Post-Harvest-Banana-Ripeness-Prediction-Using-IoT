@@ -1,0 +1,11 @@
+{
+  "method": "shap",
+  "importance": {
+    "Humid-int": 0.094406,
+    "Press-ext": 0.074004,
+    "Humid-ext": 0.06655,
+    "Press-int": 0.057265,
+    "Temp-int": 0.041724,
+    "Temp-ext": 0.027061
+  }
+}
