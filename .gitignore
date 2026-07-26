@@ -17,8 +17,8 @@ Thumbs.db
 ~$*
 *.tmp
 
-# Large model binaries — regenerate with: py -m src.run_pipeline
-outputs/models/*.pkl
+# Trained models (~53 MB) are committed so the dashboard runs from a fresh
+# clone. They can also be regenerated with: py -m src.run_pipeline
 
 # Duplicate KG export (regenerated under data/kg/)
 outputs/kg/

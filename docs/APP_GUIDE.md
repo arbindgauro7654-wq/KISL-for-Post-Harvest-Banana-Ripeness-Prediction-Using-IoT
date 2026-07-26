@@ -3,10 +3,12 @@
 ## Launch
 
 ```bash
-py -m streamlit run app.py
+py run_app.py
 ```
 
-Open **http://localhost:8501**. Requires pipeline outputs (`py -m src.run_pipeline`).
+Open **http://localhost:8501**. The launcher installs dependencies and trains the
+models if they are absent; the committed artefacts mean neither step is normally
+needed. To start Streamlit directly instead, run `py -m streamlit run app.py`.
 
 ---
 
@@ -63,6 +65,8 @@ Use this sequence for an **8–12 minute** demonstration:
 | Press-ext | 991.0 hPa |
 
 Select **KG-augmented (recommended)** → Predict. Show stage, confidence, probability bars, recommendations.
+
+While dragging any slider, the sensor gauges and the five-stage ripeness strip update instantly, so the effect of a single sensor on the predicted stage can be demonstrated before pressing Predict.
 
 **Demo B — High temperature (rule firing):**
 | Sensor | Value |
