@@ -29,4 +29,4 @@ RQ3 - Robustness (kg_rf, % of clean macro-F1)
   sensor failure: 84.0%
 
 Best model: kg_xgb
-Runtime: 350.9s
+Runtime: 307.5s

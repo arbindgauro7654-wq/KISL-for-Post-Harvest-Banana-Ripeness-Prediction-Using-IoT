@@ -35,7 +35,7 @@ py -m src.run_pipeline
 `run_app.py` checks the Python version, installs anything missing, trains the
 models if they are absent, and then opens the app. When it finishes it prints a
 URL — open **http://localhost:8501** in a browser and use the left sidebar to
-move between the seven pages. **Live Prediction** is the interactive demo.
+move between the eight pages. **Decision Support** provides side-by-side baseline vs KG comparison.
 
 Press `Ctrl+C` in the terminal to stop the dashboard.
 
@@ -45,7 +45,7 @@ On macOS or Linux, replace `py` with `python3` in every command.
 
 ## Overview
 
-RipeSense is a reproducible software artefact for **post-harvest banana ripeness prediction** using six low-cost **BME280 IoT sensor** readings, augmented with **literature-based knowledge-graph features**. The system trains and compares Random Forest and XGBoost classifiers (baseline vs knowledge-graph augmented), evaluates three research questions (integration, interpretability, robustness), and provides an interactive **Streamlit decision-support dashboard**.
+RipeSense is a reproducible software artefact for **offline post-harvest banana ripeness stage classification** using six low-cost **BME280** sensor readings on the Bath `ds_34` benchmark, augmented with **literature-based knowledge-graph features** (binary flags, risk scores, violation counts). The KG supports **interpretability and auditability**; McNemar tests show **no statistically significant accuracy gain** over sensor-only baselines on this dataset (~99.2% macro-F1). The Streamlit app integrates data management, KG feature generation, model inference, and side-by-side comparison—not live IoT deployment.
 
 ```mermaid
 flowchart LR

@@ -16,17 +16,39 @@ needed. To start Streamlit directly instead, run `py -m streamlit run app.py`.
 
 | Page | Purpose |
 |------|---------|
-| **Overview** | Project summary, key metrics, architecture flowchart, RQ1 findings |
-| **Data Explorer** | Feature ranges, class distribution, correlation heatmap, per-stage means |
+| **System Architecture** | Five-layer diagram; modules and on-disk artefacts |
+| **Overview** | Project summary, key metrics, RQ1 honest findings |
+| **Data Explorer** | Feature ranges, correlation, preprocessing preview |
 | **Knowledge Graph** | Validated/rejected rules, activation rates, chi-squared results |
 | **Model Results** | Four-model comparison, McNemar tests, confusion matrix selector |
-| **Interpretability** | SHAP importance plots, RQ2 rule-alignment score and details |
+| **Interpretability** | Global SHAP plots, RQ2 rule-alignment score |
 | **Robustness** | Noise/missing/failure curves vs 80% threshold (RQ3) |
-| **Live Prediction** | Enter sensor values → ripeness stage + fired rules + storage advice |
+| **Decision Support** | Side-by-side baseline vs KG; KG feature table; CSV/test-row simulation |
 
 ---
 
-## Live Prediction demo script (screencast)
+## Decision Support demo script (viva / screencast)
+
+Use this sequence for a **5-minute** artefact demonstration:
+
+### 1. System Architecture (30 s)
+- Show five layers: Data → Knowledge → Modelling → Evaluation → Application
+- State: offline benchmark, not live IoT
+
+### 2. Decision Support — compare (3 min)
+- Input mode: pick a test-set row or use sliders
+- Show **baseline vs KG** stage and confidence side-by-side
+- Expand **KG features generated** for this reading
+- Show **fired rules** and storage advice
+- Note: stage proxy only — not Brix or shelf-life forecast
+
+### 3. Model Results (1 min)
+- McNemar p-values (not significant)
+- Honest RQ1 null result
+
+---
+
+## Legacy Live Prediction demo script (screencast)
 
 Use this sequence for an **8–12 minute** demonstration:
 

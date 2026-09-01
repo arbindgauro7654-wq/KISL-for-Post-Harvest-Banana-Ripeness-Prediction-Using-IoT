@@ -31,7 +31,7 @@ flowchart TB
     end
     subgraph L5 [Application layer]
         A1[Streamlit UI]
-        A2[Inference service]
+        A2[Inference + compare service]
         A3[Recommendation engine]
     end
     D1 --> D3
@@ -63,7 +63,7 @@ flowchart TB
 | `robustness.py` | Evaluation | Gaussian noise, missingness, dual sensor failure sweeps |
 | `decision_support.py` | Application | Single-row inference, fired rules, storage recommendations |
 | `run_pipeline.py` | Orchestration | Execute Phases 1–6 sequentially; write `model_results.json` |
-| `app.py` | Application | Seven-page Streamlit dashboard |
+| `app.py` | Application | Eight-page Streamlit dashboard incl. Architecture & Decision Support |
 
 ---
 

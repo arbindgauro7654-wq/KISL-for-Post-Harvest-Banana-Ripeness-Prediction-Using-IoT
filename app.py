@@ -19,7 +19,7 @@ import plotly.io as pio
 import streamlit as st
 
 from src import config as C
-from src.decision_support import predict_one
+from src.decision_support import predict_compare, predict_one
 from src.kg_features import KGFeatureGenerator
 
 # --------------------------------------------------------------------------- #
@@ -306,13 +306,14 @@ CARD_TONES = [BANANA["leaf"], BANANA["gold"], BANANA["amber"], BANANA["brown"],
 
 # Each page carries its own accent, drawn from the same ripening ramp.
 PAGE_ACCENT = {
+    "System Architecture": BANANA["teal"],
     "Overview": BANANA["amber"],
     "Data Explorer": BANANA["leaf"],
     "Knowledge Graph": BANANA["olive"],
     "Model Results": BANANA["peel"],
     "Interpretability": BANANA["brown"],
     "Robustness": BANANA["teal"],
-    "Live Prediction": BANANA["amber"],
+    "Decision Support": BANANA["amber"],
 }
 
 # Ripeness stage colours: green through to brown.
@@ -452,6 +453,22 @@ def fig_path(name):
     return p if os.path.exists(p) else None
 
 
+@st.cache_data(show_spinner=False)
+def load_test_samples(n: int = 40) -> pd.DataFrame:
+    """Sample rows from the held-out test CSV for offline simulation."""
+    x_path = os.path.join(C.DATA_DIR, "ds_34_x_test.csv")
+    y_path = os.path.join(C.DATA_DIR, "ds_34_y_test.csv")
+    if not os.path.exists(x_path) or not os.path.exists(y_path):
+        return pd.DataFrame()
+    X = pd.read_csv(x_path, index_col=0)[C.SENSOR_FEATURES]
+    y = pd.read_csv(y_path, index_col=0).iloc[:, 0].astype(int)
+    df = X.copy()
+    df[C.LABEL_NAME] = y.values
+    df.insert(0, "row_id", df.index.astype(str))
+    step = max(1, len(df) // n)
+    return df.iloc[::step].head(n).reset_index(drop=True)
+
+
 def card(col, label, value, tone: int = 0):
     """Metric tile; `tone` picks a colour from the ripening ramp."""
     colour = CARD_TONES[tone % len(CARD_TONES)]
@@ -580,8 +597,8 @@ st.sidebar.markdown(
     unsafe_allow_html=True)
 PAGE = st.sidebar.radio(
     "Navigate",
-    ["Overview", "Data Explorer", "Knowledge Graph", "Model Results",
-     "Interpretability", "Robustness", "Live Prediction"],
+    ["System Architecture", "Overview", "Data Explorer", "Knowledge Graph",
+     "Model Results", "Interpretability", "Robustness", "Decision Support"],
     key="nav_page",
 )
 st.sidebar.markdown("---")
@@ -618,9 +635,58 @@ if RESULTS is None:
 
 
 # --------------------------------------------------------------------------- #
+# Page: System Architecture
+# --------------------------------------------------------------------------- #
+if PAGE == "System Architecture":
+    page_header(
+        "overview", "System Architecture",
+        "Integrated AI system: data management, knowledge-graph feature generation, "
+        "trained models, evaluation artefacts, and offline decision-support UI.",
+        eyebrow="Five-layer design")
+    layers = [
+        ("Data layer", "ds_34 CSVs, range validation, min–max scaler",
+         "data_loader.py", "scaler.pkl, data_report.json"),
+        ("Knowledge layer", "Literature triples → flags, risk scores, violation count",
+         "knowledge_graph.py, kg_features.py", "kg_generator.json, validated_rules.json"),
+        ("Modelling layer", "RF / XGBoost four-model ablation, GridSearchCV",
+         "train.py", "baseline_*.pkl, kg_*.pkl, best_model.pkl"),
+        ("Evaluation layer", "Metrics, McNemar, SHAP, robustness harness",
+         "evaluate.py, robustness.py", "model_results.json, figures/"),
+        ("Application layer", "Streamlit decision support, compare & explain",
+         "app.py, decision_support.py", "Interactive inference on saved artefacts"),
+    ]
+    arch = """
+    digraph {
+      bgcolor="transparent"; rankdir=TB; pad=0.3; nodesep=0.5;
+      node [shape=box style="rounded,filled" fontname="Segoe UI" fontsize=10
+            penwidth=1.2 color="#e0d8c8" fontcolor="#241e14"];
+      edge [color="#c7bfae" penwidth=1.2 arrowsize=0.7];
+      D [label="Data\\n(CSV + scaler)" fillcolor="#ffffff"];
+      K [label="Knowledge\\n(KG features)" fillcolor="#eef3e4"];
+      M [label="Modelling\\n(RF / XGBoost)" fillcolor="#fdf3d8"];
+      E [label="Evaluation\\n(metrics / SHAP)" fillcolor="#f5efe4"];
+      A [label="Application\\n(RipeSense UI)" fillcolor="#e3a008" fontcolor="#ffffff"];
+      D -> K; D -> M; K -> M; M -> E; M -> A; K -> A;
+    }
+    """
+    st.graphviz_chart(arch, width='stretch')
+    st.markdown("### Layer responsibilities")
+    for i, (layer, desc, module, artefact) in enumerate(layers):
+        st.markdown(
+            f"<div class='rulebox' style='--tone:{CARD_TONES[i % len(CARD_TONES)]}'>"
+            f"<span class='pill'>{layer}</span> {desc}<br>"
+            f"<small><b>Module:</b> <code>{module}</code> &nbsp;·&nbsp; "
+            f"<b>Artefact:</b> <code>{artefact}</code></small></div>",
+            unsafe_allow_html=True)
+    st.caption(
+        "Offline benchmark only: no live IoT streams. Decision Support replays the "
+        "same inference path on simulated or uploaded sensor readings.")
+
+
+# --------------------------------------------------------------------------- #
 # Page: Overview
 # --------------------------------------------------------------------------- #
-if PAGE == "Overview":
+elif PAGE == "Overview":
     page_header(
         "overview", "RipeSense",
         "Predicting post-harvest banana ripeness from low-cost IoT sensors, "
@@ -638,9 +704,11 @@ if PAGE == "Overview":
 
     st.markdown("### How RipeSense works")
     st.markdown(
-        "RipeSense fuses **six BME280 sensor readings** with **expert post-harvest "
-        "knowledge** encoded as a knowledge graph. Validated rules become extra "
-        "model features, improving accuracy, interpretability and robustness.")
+        "RipeSense fuses **six BME280 sensor readings** with **literature-based "
+        "knowledge-graph rules** encoded as transparent tabular features. The KG "
+        "supports **interpretability and operator audit** while sensor-only models "
+        "already achieve ~99.2% macro-F1 (McNemar: no significant KG accuracy gain). "
+        "This is an **offline simulation** of decision support—not live IoT deployment.")
 
     flow = """
     digraph {
@@ -731,6 +799,27 @@ elif PAGE == "Data Explorer":
         if fig_path("sensor_by_stage.png"):
             st.subheader("Sensor distributions by stage")
             st.image(fig_path("sensor_by_stage.png"), width='stretch')
+
+    st.subheader("Preprocessing preview (offline replay)")
+    st.caption(
+        "Dataset: Bath ds_34 · DOI 10.15125/BATH-01459 · previously collected "
+        "laboratory recordings, not live IoT streams.")
+    absent = missing_artefacts()
+    if absent:
+        st.info("Load trained models (`py -m src.run_pipeline`) to preview scaling.")
+    else:
+        scaler, _, _ = load_models()
+        preview_vals = {f: float(fs.loc[f, "mean"]) for f in C.SENSOR_FEATURES}
+        from src.decision_support import preprocess_preview
+        prev = preprocess_preview(scaler, preview_vals)
+        st.dataframe(
+            pd.DataFrame(prev["rows"]).rename(columns={
+                "feature": "Sensor", "raw": "Raw value", "scaled": "Scaled [0–1]",
+                "in_range": "In range?", "lo": "Min", "hi": "Max",
+            }),
+            width='stretch',
+            hide_index=True,
+        )
 
 
 # --------------------------------------------------------------------------- #
@@ -884,164 +973,164 @@ elif PAGE == "Robustness":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Live Prediction
+# Page: Decision Support (compare baseline vs KG)
 # --------------------------------------------------------------------------- #
-elif PAGE == "Live Prediction":
-    page_header("live", "Live Ripeness Prediction",
-                "Set the six IoT sensor readings below. RipeSense predicts the "
-                "banana ripeness stage, shows which knowledge-graph rules fired, "
-                "and gives storage advice.")
+elif PAGE == "Decision Support":
+    page_header("live", "Decision Support",
+                "Simulate or upload six BME280 readings. Compare sensor-only and "
+                "knowledge-augmented predictions side-by-side, inspect KG features, "
+                "fired rules, and local explanations. Advisory only—not Brix, "
+                "shelf-life, or live IoT deployment.")
 
     absent = missing_artefacts()
     if absent:
-        st.warning("**Trained model files are not present, so live inference is "
-                   "unavailable.** Every other page works from the committed "
-                   "results, but this page needs the fitted estimators.")
-        st.markdown("Generate them once (about four to five minutes on a CPU), "
-                    "then reload this page:")
+        st.warning("**Trained model files are not present.** Run the pipeline first:")
         st.code("py -m src.run_pipeline", language="bash")
-        st.caption("Missing from outputs/models/: " + ", ".join(absent))
+        st.caption("Missing: " + ", ".join(absent))
         st.stop()
 
     scaler, gen, models = load_models()
     fs = pd.DataFrame(RESULTS["feature_summary"])
+    defaults = {f: float(fs.loc[f, "mean"]) for f in C.SENSOR_FEATURES}
 
-    # Quick reference of what each ripeness stage means.
-    with st.expander("What do the ripeness stages mean?", expanded=False):
-        ref = st.columns(5)
-        for s in C.RIPENESS_STAGES:
-            ref[s - 1].markdown(
-                f"<div style='text-align:center'>"
-                f"<span style='display:block;width:12px;height:12px;border-radius:50%;"
-                f"margin:0.2rem auto 0.5rem;background:{STAGE_COLORS[s]}'></span>"
-                f"<b style='color:{STAGE_TEXT[s]};font-size:0.85rem'>Stage {s}</b>"
-                f"<div style='font-size:0.78rem;color:{MUTED};line-height:1.35;"
-                f"margin-top:0.15rem'>{C.STAGE_LABELS[s].split(' - ')[1]}</div></div>",
-                unsafe_allow_html=True)
+    input_mode = st.radio(
+        "Input mode",
+        ["Manual sliders", "Pick test-set row", "Upload CSV (one row)"],
+        horizontal=True,
+        key="ds_input_mode",
+    )
 
-    # Sliders sit outside a form so that every movement refreshes the animated
-    # preview below in real time.
-    vals, ranges = {}, {}
-    groups = [("enclosure", "Internal sensors (inside the fruit enclosure)",
-               ["Temp-int", "Humid-int", "Press-int"]),
-              ("ambient", "Ambient sensors (surrounding environment)",
-               ["Temp-ext", "Humid-ext", "Press-ext"])]
-    gcols = st.columns(2)
-    for gcol, (glyph, title, feats) in zip(gcols, groups):
-        with gcol, st.container(border=True):
-            st.markdown(f"<div class='sensor-group-title'>{icon(glyph, 16)}"
-                        f"<span>{title}</span></div>",
-                        unsafe_allow_html=True)
-            for feat in feats:
-                lo = float(fs.loc[feat, "min"])
-                hi = float(fs.loc[feat, "max"])
-                mean = float(fs.loc[feat, "mean"])
-                name, unit, _ = FEATURE_META[feat]
-                ranges[feat] = (lo, hi)
-                vals[feat] = st.slider(
-                    f"{name} ({unit})",
-                    lo, hi, mean, step=(hi - lo) / 200 or 0.1,
-                    help=f"Observed range in training data: "
-                         f"{lo:.1f} - {hi:.1f} {unit}",
-                    key=f"input_{feat.replace('-', '_')}",
-                )
+    vals = dict(defaults)
+    ground_truth = None
 
-    model_choice = st.radio(
-        "Model", ["KG-augmented (recommended)", "Sensor-only baseline"],
-        horizontal=True, key="model_choice")
+    if input_mode == "Pick test-set row":
+        samples = load_test_samples()
+        if samples.empty:
+            st.error("Test CSV not found in data/ds_34/.")
+            st.stop()
+        options = [
+            f"Row {r.row_id} · actual stage {int(r[C.LABEL_NAME])}"
+            for r in samples.itertuples()
+        ]
+        pick = st.selectbox("Test sample (ground truth for demo only)", options)
+        idx = options.index(pick)
+        row = samples.iloc[idx]
+        for f in C.SENSOR_FEATURES:
+            vals[f] = float(row[f])
+        ground_truth = int(row[C.LABEL_NAME])
+        st.info(f"Loaded test row — labelled stage **{ground_truth}** (offline benchmark).")
 
-    use_kg = model_choice.startswith("KG")
-    model = models["kg_rf"] if use_kg else models["baseline_rf"]
-    out = predict_one(model, scaler, gen, vals, is_kg=use_kg)
-    stage = out["predicted_stage"]
-    color = STAGE_COLORS[stage]
-    desc = C.STAGE_LABELS[stage].split(" - ")[1]
+    elif input_mode == "Upload CSV (one row)":
+        up = st.file_uploader("CSV with columns: " + ", ".join(C.SENSOR_FEATURES),
+                              type=["csv"])
+        if up is not None:
+            df_up = pd.read_csv(up)
+            miss = [c for c in C.SENSOR_FEATURES if c not in df_up.columns]
+            if miss:
+                st.error("Missing columns: " + ", ".join(miss))
+            else:
+                row = df_up.iloc[0]
+                for f in C.SENSOR_FEATURES:
+                    vals[f] = float(row[f])
+                st.success("CSV row loaded.")
 
-    # Echo back exactly what was entered, with icon, name, value and unit.
-    st.markdown(live_badge("Your input readings"), unsafe_allow_html=True)
-    in_cols = st.columns(6)
-    for i, (ic, feat) in enumerate(zip(in_cols, C.SENSOR_FEATURES)):
-        lo, hi = ranges[feat]
-        ic.markdown(sensor_gauge(feat, vals[feat], lo, hi, delay=0.04 * i),
-                    unsafe_allow_html=True)
+    algo = st.radio("Algorithm", ["XGBoost", "Random Forest"], horizontal=True,
+                    key="ds_algo")
+    algo_key = "xgb" if algo.startswith("XGB") else "rf"
 
-    st.markdown(live_badge("Ripeness estimate"), unsafe_allow_html=True)
-    st.markdown(stage_strip(stage), unsafe_allow_html=True)
-    st.markdown(confidence_meter(out["confidence"], color, "Prediction confidence"),
-                unsafe_allow_html=True)
+    if input_mode == "Manual sliders":
+        groups = [
+            ("enclosure", "Internal sensors", ["Temp-int", "Humid-int", "Press-int"]),
+            ("ambient", "Ambient sensors", ["Temp-ext", "Humid-ext", "Press-ext"]),
+        ]
+        gcols = st.columns(2)
+        for gcol, (glyph, title, feats) in zip(gcols, groups):
+            with gcol, st.container(border=True):
+                st.markdown(f"<div class='sensor-group-title'>{icon(glyph, 16)}"
+                            f"<span>{title}</span></div>", unsafe_allow_html=True)
+                for feat in feats:
+                    lo = float(fs.loc[feat, "min"])
+                    hi = float(fs.loc[feat, "max"])
+                    mean = float(fs.loc[feat, "mean"])
+                    name, unit, _ = FEATURE_META[feat]
+                    vals[feat] = st.slider(
+                        f"{name} ({unit})", lo, hi, mean,
+                        step=(hi - lo) / 200 or 0.1,
+                        key=f"ds_{feat.replace('-', '_')}",
+                    )
 
-    if st.button("Predict ripeness", type="primary", key="predict_btn"):
-        st.session_state["show_detail"] = True
+    compare = predict_compare(models, scaler, gen, vals, algorithm=algo_key)
 
-    if st.session_state.get("show_detail"):
-        st.markdown(
-            f"<div class='stage-banner' style='--sc:{color}'>"
+    if compare["disagree"]:
+        st.warning(
+            f"Models **disagree**: baseline stage {compare['baseline']['predicted_stage']} "
+            f"vs KG stage {compare['kg']['predicted_stage']} — consistent with sparse "
+            "McNemar discordant pairs on the full test set.")
+    else:
+        st.success(
+            f"Models **agree** on stage {compare['baseline']['predicted_stage']} "
+            f"(confidence baseline {compare['baseline']['confidence']*100:.1f}% · "
+            f"KG {compare['kg']['confidence']*100:.1f}%).")
+
+    c1, c2 = st.columns(2)
+    for col, side, key in [(c1, "Sensor-only baseline", "baseline"),
+                           (c2, "KG-augmented", "kg")]:
+        pred = compare[key]
+        sc = STAGE_COLORS[pred["predicted_stage"]]
+        col.markdown(
+            f"<div class='stage-banner' style='--sc:{sc};margin-bottom:0.8rem'>"
             f"<span class='sw'><i></i></span><div>"
-            f"<div class='t'>Predicted: Stage {stage} &mdash; {desc}</div>"
-            f"<small>Confidence {out['confidence']*100:.1f}% · "
-            f"model: {'KG-augmented' if use_kg else 'sensor-only baseline'}</small>"
-            f"</div></div>",
+            f"<div class='t'>{side}</div>"
+            f"<div class='t'>Stage {pred['predicted_stage']} — "
+            f"{C.STAGE_LABELS[pred['predicted_stage']].split(' - ')[1]}</div>"
+            f"<small>Confidence {pred['confidence']*100:.1f}%</small></div></div>",
             unsafe_allow_html=True)
+        probs = pred["class_probabilities"]
+        fig = px.bar(
+            x=[f"S{s}" for s in sorted(probs.keys())],
+            y=[probs[s] for s in sorted(probs.keys())],
+            labels={"x": "Stage", "y": "Probability"},
+            color=[f"S{s}" for s in sorted(probs.keys())],
+            color_discrete_map={
+                f"S{s}": STAGE_COLORS[s] for s in sorted(probs.keys())
+            },
+        )
+        fig.update_layout(showlegend=False, height=260, yaxis_range=[0, 1.05])
+        col.plotly_chart(fig, use_container_width=True)
 
-        c1, c2 = st.columns([1, 1.2])
-        with c1:
-            fig = go.Figure(go.Indicator(
-                mode="gauge+number", value=out["confidence"] * 100,
-                number={"suffix": "%", "font": {"color": INK, "size": 30}},
-                title={"text": "Prediction confidence",
-                       "font": {"size": 13, "color": MUTED}},
-                gauge={"axis": {"range": [0, 100], "tickwidth": 1,
-                                "tickcolor": "#dde4df",
-                                "tickfont": {"size": 10, "color": MUTED}},
-                       "bar": {"color": color, "thickness": 0.3},
-                       "bgcolor": "rgba(0,0,0,0)", "borderwidth": 0,
-                       "steps": [{"range": [0, 50], "color": "#f1f4f2"},
-                                 {"range": [50, 80], "color": "#e9efeb"},
-                                 {"range": [80, 100], "color": "#e0ebe3"}],
-                       "threshold": {"line": {"color": MUTED, "width": 1.4},
-                                     "thickness": 0.8, "value": 80}}))
-            fig.update_layout(height=320, margin=dict(t=60, b=10),
-                              transition={"duration": 650,
-                                          "easing": "cubic-in-out"})
-            st.plotly_chart(fig, width='stretch', key="live_gauge")
-        with c2:
-            probs = out["class_probabilities"]
-            stages_sorted = sorted(probs.keys(), key=lambda x: int(x))
-            x_labels = [f"Stage {s}" for s in stages_sorted]
-            y_vals = [probs[s] for s in stages_sorted]
-            fig = px.bar(
-                x=x_labels, y=y_vals,
-                color=x_labels,
-                color_discrete_map={f"Stage {s}": STAGE_COLORS[int(s)] for s in stages_sorted},
-                text=[f"{probs[s]*100:.1f}%" for s in stages_sorted],
-                labels={"x": "Ripeness stage", "y": "Probability"})
-            fig.update_traces(textposition="outside",
-                              textfont=dict(size=11, color=MUTED))
-            fig.update_layout(showlegend=False, height=320,
-                              yaxis_range=[0, 1.14], yaxis_tickformat=".0%",
-                              title="Probability per ripeness stage",
-                              margin=dict(t=60, b=10),
-                              transition={"duration": 650,
-                                          "easing": "cubic-in-out"})
-            st.plotly_chart(fig, width='stretch', key="live_probs")
+    st.subheader("Knowledge-graph features (generated for this reading)")
+    st.dataframe(compare["kg_features"].T.rename(columns={0: "value"}),
+                 width='stretch')
 
-        st.subheader("Storage recommendations")
-        for i, rec in enumerate(out["recommendations"]):
-            st.markdown(f"<div class='rulebox' style='animation-delay:"
-                        f"{0.05 * i:.2f}s'>{rec}</div>", unsafe_allow_html=True)
+    st.subheader("Preprocessing trace")
+    st.dataframe(pd.DataFrame(compare["preprocess"]["rows"]), width='stretch',
+                 hide_index=True)
 
-        st.subheader("Knowledge-graph rules that fired")
-        if out["fired_rules"]:
-            for i, r in enumerate(out["fired_rules"]):
-                st.markdown(
-                    f"<div class='firedrule' style='animation-delay:{0.05 * i:.2f}s'>"
-                    f"<span class='pill'>{r['rule_id']}</span> "
-                    f"{r['text']} &nbsp;<em style='color:{MUTED}'>{r['source']}</em>"
-                    f"</div>",
-                    unsafe_allow_html=True)
-        else:
-            st.info("No knowledge-graph rules fired for these readings — the "
-                    "values sit within normal mid-range bounds.")
+    st.subheader("Local feature importance (this model)")
+    lc1, lc2 = st.columns(2)
+    lc1.markdown("**Baseline**")
+    lc1.dataframe(pd.DataFrame(compare["baseline_local_features"]),
+                  hide_index=True, width='stretch')
+    lc2.markdown("**KG-augmented**")
+    lc2.dataframe(pd.DataFrame(compare["kg_local_features"]),
+                  hide_index=True, width='stretch')
+    st.caption(
+        "Local panel uses tree impurity importances for the fitted model; global "
+        "batch SHAP plots are on the Interpretability page.")
+
+    st.subheader("Fired knowledge-graph rules & storage advice")
+    for i, rec in enumerate(compare["kg"]["recommendations"]):
+        st.markdown(f"<div class='rulebox' style='animation-delay:{0.05*i:.2f}s'>"
+                    f"{rec}</div>", unsafe_allow_html=True)
+    if compare["kg"]["fired_rules"]:
+        for i, r in enumerate(compare["kg"]["fired_rules"]):
+            st.markdown(
+                f"<div class='firedrule' style='animation-delay:{0.05*i:.2f}s'>"
+                f"<span class='pill'>{r['rule_id']}</span> {r['text']} "
+                f"<em style='color:{MUTED}'>{r['source']}</em></div>",
+                unsafe_allow_html=True)
+    else:
+        st.info("No rules fired — readings within normal mid-range bounds.")
 
 st.markdown("<div style='margin-top:2.6rem;padding-top:1rem;"
             "border-top:1px solid var(--line);color:#8b9891;font-size:0.78rem;"

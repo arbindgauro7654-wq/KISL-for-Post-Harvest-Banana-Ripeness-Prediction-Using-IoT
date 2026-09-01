@@ -113,6 +113,20 @@ def load_data() -> DataBundle:
     )
 
 
+def validate_sensor_row(values: dict) -> dict:
+    """Range-check one six-sensor reading (used by Decision Support UI)."""
+    out = {}
+    for col, (lo, hi) in C.VALID_RANGES.items():
+        v = float(values[col])
+        out[col] = {
+            "value": v,
+            "in_range": lo <= v <= hi,
+            "lo": lo,
+            "hi": hi,
+        }
+    return out
+
+
 def feature_summary(X: pd.DataFrame) -> pd.DataFrame:
     """Per-feature min/max/mean/std table (used by EDA and the app)."""
     return pd.DataFrame(
