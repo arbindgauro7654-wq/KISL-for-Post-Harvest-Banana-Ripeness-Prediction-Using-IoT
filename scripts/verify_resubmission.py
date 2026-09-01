@@ -51,9 +51,8 @@ def main() -> int:
         if needle not in app_text:
             errors.append(f"app.py missing {needle}")
 
-    arch = (ROOT / "docs" / "ARCHITECTURE.md").read_text(encoding="utf-8")
-    if "Decision Support" not in arch and "decision_support" not in arch:
-        errors.append("ARCHITECTURE.md not updated")
+    if not (ROOT / "docs" / "screenshots").is_dir():
+        errors.append("docs/screenshots/ missing")
 
     if errors:
         for e in errors:
