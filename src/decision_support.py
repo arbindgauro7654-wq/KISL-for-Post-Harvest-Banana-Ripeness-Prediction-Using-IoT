@@ -2,6 +2,9 @@
 
 Maps predictions plus fired KG rules into plain-language storage advice.
 Supports side-by-side baseline vs KG comparison for the Streamlit app.
+
+Viva tip: this is offline inference replay — same path as training but on one row;
+predict_compare is the key demo function for the 5-min viva walkthrough.
 """
 from __future__ import annotations
 
@@ -13,6 +16,7 @@ from .data_loader import validate_sensor_row
 from .kg_features import KGFeatureGenerator
 from .train import decode
 
+# Used for: map fired rule objects → human-readable post-harvest storage advice
 ADVICE_BY_OBJECT = {
     "ripening": "Ripening is being driven by current temperature - adjust "
                 "storage temperature to control speed.",
@@ -28,6 +32,7 @@ ADVICE_BY_OBJECT = {
                         "conditions.",
 }
 
+# Used for: stage-specific guidance shown alongside KG rule explanations
 STAGE_ADVICE = {
     1: "Green and starchy - suitable for long storage / shipping.",
     2: "Beginning to turn - hold or begin controlled ripening.",
@@ -38,15 +43,18 @@ STAGE_ADVICE = {
 
 
 def _raw_frame(sensor_values: dict) -> pd.DataFrame:
+    """Used for: wrap six sensor dict values into a one-row DataFrame for sklearn."""
     return pd.DataFrame([sensor_values])[C.SENSOR_FEATURES]
 
 
 def _scale(scaler, raw: pd.DataFrame) -> pd.DataFrame:
+    """Used for: apply saved MinMaxScaler (same as training — no refitting)."""
     return pd.DataFrame(scaler.transform(raw), columns=C.SENSOR_FEATURES)
 
 
 def _build_feature_matrix(scaler, generator: KGFeatureGenerator,
                           sensor_values: dict, is_kg: bool) -> pd.DataFrame:
+    """Used for: 6 scaled columns (baseline) or 6 + KG columns (kg model input)."""
     raw = _raw_frame(sensor_values)
     scaled = _scale(scaler, raw)
     if is_kg:
@@ -56,6 +64,7 @@ def _build_feature_matrix(scaler, generator: KGFeatureGenerator,
 
 
 def _predict_from_matrix(model, feats: pd.DataFrame) -> dict:
+    """Used for: sklearn predict + predict_proba → stage label and confidence."""
     pred_enc = int(model.predict(feats)[0])
     stage = int(decode([pred_enc])[0])
     proba = model.predict_proba(feats)[0]
@@ -70,6 +79,7 @@ def _predict_from_matrix(model, feats: pd.DataFrame) -> dict:
 
 
 def _recommendations(stage: int, fired: list[dict]) -> list[str]:
+    """Used for: combine stage advice + one line per unique fired rule object."""
     advice = [STAGE_ADVICE[stage]]
     seen = set()
     for r in fired:
@@ -83,7 +93,7 @@ def _recommendations(stage: int, fired: list[dict]) -> list[str]:
 
 
 def preprocess_preview(scaler, sensor_values: dict) -> dict:
-    """Raw -> scaled values and range validation for one reading."""
+    """Used for: Data Explorer + Decision Support — show raw vs scaled + in-range flags."""
     raw = _raw_frame(sensor_values)
     scaled = _scale(scaler, raw)
     rows = []
@@ -98,14 +108,14 @@ def preprocess_preview(scaler, sensor_values: dict) -> dict:
 
 
 def kg_feature_table(generator: KGFeatureGenerator, sensor_values: dict) -> pd.DataFrame:
-    """Visible KG columns generated for the current sensor reading."""
+    """Used for: Decision Support table — flag_*, risk_*, kg_violation_count for this row."""
     raw = _raw_frame(sensor_values)
     kg = generator.transform(raw)
     return kg.round(4)
 
 
 def local_top_features(model, feats: pd.DataFrame, top_n: int = 5) -> list[dict]:
-    """Top features by tree impurity importance for this model (local proxy)."""
+    """Used for: quick local explanation — top tree impurity features (not full SHAP)."""
     names = list(feats.columns)
     importances = getattr(model, "feature_importances_", None)
     if importances is None or len(importances) != len(names):
@@ -116,7 +126,7 @@ def local_top_features(model, feats: pd.DataFrame, top_n: int = 5) -> list[dict]
 
 def predict_one(model, scaler, generator: KGFeatureGenerator,
                 sensor_values: dict, is_kg: bool = True) -> dict:
-    """Predict ripeness for a single reading (single model path)."""
+    """Used for: single-model inference path (pipeline demo JSON + legacy UI)."""
     feats = _build_feature_matrix(scaler, generator, sensor_values, is_kg)
     out = _predict_from_matrix(model, feats)
     fired = generator.fired_rules(sensor_values) if is_kg else []
@@ -127,7 +137,7 @@ def predict_one(model, scaler, generator: KGFeatureGenerator,
 
 def predict_compare(models: dict, scaler, generator: KGFeatureGenerator,
                     sensor_values: dict, algorithm: str = "xgb") -> dict:
-    """Side-by-side baseline vs KG for RF or XGBoost."""
+    """Used for: viva demo — side-by-side baseline vs KG prediction + explainability."""
     algo = algorithm.lower()
     base_key = f"baseline_{algo}"
     kg_key = f"kg_{algo}"

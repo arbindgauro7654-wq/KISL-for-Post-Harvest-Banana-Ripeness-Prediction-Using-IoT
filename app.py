@@ -4,26 +4,29 @@ An interactive Streamlit dashboard that visualises the data, the knowledge
 graph, model performance, interpretability and robustness, and provides a live
 prediction tool. Start it with:  py run_app.py
 (or directly:  py -m streamlit run app.py)
+
+Viva tip: eight pages map to report sections — start demo at System Architecture,
+then Decision Support (predict_compare side-by-side).
 """
 from __future__ import annotations
 
 import json
 import os
 
-import joblib
+import joblib       # Used for: load scaler.pkl and trained models from outputs/models/
 import numpy as np
 import pandas as pd
-import plotly.express as px
+import plotly.express as px   # Used for: interactive bar/line charts in dashboard
 import plotly.graph_objects as go
-import plotly.io as pio
-import streamlit as st
+import plotly.io as pio       # Used for: custom "ripesense" chart theme
+import streamlit as st        # Used for: eight-page web UI (no separate frontend code)
 
 from src import config as C
 from src.decision_support import predict_compare, predict_one
 from src.kg_features import KGFeatureGenerator
 
 # --------------------------------------------------------------------------- #
-# Page config & theme
+# Page config & theme — Used for: wide layout + banana-themed CSS styling
 # --------------------------------------------------------------------------- #
 st.set_page_config(page_title="RipeSense - Banana Ripeness Decision Support",
                    page_icon=":material/eco:", layout="wide",
@@ -404,10 +407,11 @@ def icon(name: str, size: int = 20, stroke: float = 1.6) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Artefact loading
+# Artefact loading — Used for: read pipeline outputs without retraining
 # --------------------------------------------------------------------------- #
 @st.cache_data(show_spinner=False)
 def load_results():
+    """Used for: model_results.json — metrics, McNemar, KG counts for all pages."""
     path = os.path.join(C.RESULT_DIR, "model_results.json")
     if not os.path.exists(path):
         return None
@@ -417,6 +421,7 @@ def load_results():
 
 @st.cache_data(show_spinner=False)
 def load_json(name):
+    """Used for: eda_summary.json, validated_rules.json, shap_*.json, robustness.json."""
     path = os.path.join(C.RESULT_DIR, name)
     if not os.path.exists(path):
         return None
@@ -424,7 +429,7 @@ def load_json(name):
         return json.load(f)
 
 
-#: Artefacts the Live Prediction page needs before it can run inference.
+#: Used for: Decision Support cannot run inference until these files exist.
 REQUIRED_ARTEFACTS = ("scaler.pkl", "kg_generator.json", "baseline_rf.pkl",
                       "kg_rf.pkl")
 
@@ -438,6 +443,7 @@ def missing_artefacts() -> list[str]:
 
 @st.cache_resource(show_spinner=False)
 def load_models():
+    """Used for: load scaler + KG generator + all four .pkl models once per session."""
     scaler = joblib.load(os.path.join(C.MODEL_DIR, "scaler.pkl"))
     gen = KGFeatureGenerator.load(os.path.join(C.MODEL_DIR, "kg_generator.json"))
     models = {}
@@ -455,7 +461,7 @@ def fig_path(name):
 
 @st.cache_data(show_spinner=False)
 def load_test_samples(n: int = 40) -> pd.DataFrame:
-    """Sample rows from the held-out test CSV for offline simulation."""
+    """Used for: offline replay — pick held-out Bath test rows (not live IoT)."""
     x_path = os.path.join(C.DATA_DIR, "ds_34_x_test.csv")
     y_path = os.path.join(C.DATA_DIR, "ds_34_y_test.csv")
     if not os.path.exists(x_path) or not os.path.exists(y_path):
@@ -561,7 +567,7 @@ def confidence_meter(confidence: float, colour: str, caption: str) -> str:
 
 
 # --------------------------------------------------------------------------- #
-# Chart theme - applied to every Plotly figure in the app
+# Chart theme — Used for: consistent Plotly colours across all dashboard pages
 # --------------------------------------------------------------------------- #
 _AXIS = dict(gridcolor="#f0eade", zerolinecolor="#e8e2d5", linecolor="#e0d8c8",
              ticks="outside", tickcolor="#e0d8c8", ticklen=4,
@@ -585,7 +591,7 @@ pio.templates.default = "ripesense"
 RESULTS = load_results()
 
 # --------------------------------------------------------------------------- #
-# Sidebar
+# Sidebar — Used for: navigation across eight report-aligned dashboard pages
 # --------------------------------------------------------------------------- #
 _ramp = "".join(f"<i style='background:{STAGE_COLORS[s]}'></i>"
                 for s in sorted(STAGE_COLORS))
@@ -635,7 +641,7 @@ if RESULTS is None:
 
 
 # --------------------------------------------------------------------------- #
-# Page: System Architecture
+# Page: System Architecture — Used for: five-layer diagram + module/artefact map
 # --------------------------------------------------------------------------- #
 if PAGE == "System Architecture":
     page_header(
@@ -677,14 +683,14 @@ if PAGE == "System Architecture":
             f"<span class='pill'>{layer}</span> {desc}<br>"
             f"<small><b>Module:</b> <code>{module}</code> &nbsp;·&nbsp; "
             f"<b>Artefact:</b> <code>{artefact}</code></small></div>",
-            unsafe_allow_html=True)
+        unsafe_allow_html=True)
     st.caption(
         "Offline benchmark only: no live IoT streams. Decision Support replays the "
         "same inference path on simulated or uploaded sensor readings.")
 
 
 # --------------------------------------------------------------------------- #
-# Page: Overview
+# Page: Overview — Used for: headline metrics, pipeline flowchart, RQ1 McNemar cards
 # --------------------------------------------------------------------------- #
 elif PAGE == "Overview":
     page_header(
@@ -744,7 +750,7 @@ elif PAGE == "Overview":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Data Explorer
+# Page: Data Explorer — Used for: EDA stats, correlation, preprocessing preview
 # --------------------------------------------------------------------------- #
 elif PAGE == "Data Explorer":
     page_header("data", "Data Explorer",
@@ -823,7 +829,7 @@ elif PAGE == "Data Explorer":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Knowledge Graph
+# Page: Knowledge Graph — Used for: validated/rejected rules + activation chart
 # --------------------------------------------------------------------------- #
 elif PAGE == "Knowledge Graph":
     page_header("graph", "Knowledge Graph",
@@ -860,7 +866,7 @@ elif PAGE == "Knowledge Graph":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Model Results
+# Page: Model Results — Used for: four-model table, McNemar (RQ1), confusion matrices
 # --------------------------------------------------------------------------- #
 elif PAGE == "Model Results":
     page_header("results", "Model Results",
@@ -903,7 +909,7 @@ elif PAGE == "Model Results":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Interpretability
+# Page: Interpretability — Used for: SHAP bar charts + RQ2 rule alignment score
 # --------------------------------------------------------------------------- #
 elif PAGE == "Interpretability":
     page_header("interpret", "Interpretability (SHAP)",
@@ -935,12 +941,12 @@ elif PAGE == "Interpretability":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Robustness
+# Page: Robustness — Used for: RQ3 noise/missing/failure degradation curves
 # --------------------------------------------------------------------------- #
 elif PAGE == "Robustness":
     page_header("robust", "Robustness (RQ3)",
                 "Macro-F1 retained as a percentage of clean-data performance under "
-                "sensor noise, missing values, and dual sensor failure.")
+               "sensor noise, missing values, and dual sensor failure.")
     rob = RESULTS["robustness"]
 
     for kind, title in [("noise", "Gaussian noise"), ("missing", "Missing values")]:
@@ -973,7 +979,7 @@ elif PAGE == "Robustness":
 
 
 # --------------------------------------------------------------------------- #
-# Page: Decision Support (compare baseline vs KG)
+# Page: Decision Support — Used for: viva demo (sliders, test row, CSV, predict_compare)
 # --------------------------------------------------------------------------- #
 elif PAGE == "Decision Support":
     page_header("live", "Decision Support",
@@ -1059,6 +1065,7 @@ elif PAGE == "Decision Support":
                         key=f"ds_{feat.replace('-', '_')}",
                     )
 
+    # Used for: core viva demo — baseline vs KG side-by-side + KG features + advice
     compare = predict_compare(models, scaler, gen, vals, algorithm=algo_key)
 
     if compare["disagree"]:

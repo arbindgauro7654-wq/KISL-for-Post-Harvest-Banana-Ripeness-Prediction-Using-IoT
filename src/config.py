@@ -5,13 +5,16 @@ All design decisions here trace back to the documents in ``docs/``:
 - six BME280 features only (docs/05)
 - labels are integer ripeness stages 1-5, already perfectly balanced (docs/05)
 - KG rules derived from post-harvest literature (docs/03, docs/04)
+
+Viva tip: this file is the single source of truth — mention it when asked
+where rules, sensor names, or hyperparameter grids are defined.
 """
 from __future__ import annotations
 
-import os
+import os  # Used for: building cross-platform folder paths to data/outputs
 
 # --------------------------------------------------------------------------- #
-# Paths
+# Paths — Used for: every module reads/writes artefacts via these constants
 # --------------------------------------------------------------------------- #
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "data", "ds_34")
@@ -25,12 +28,12 @@ for _d in (KG_DIR, OUTPUT_DIR, FIG_DIR, MODEL_DIR, RESULT_DIR):
     os.makedirs(_d, exist_ok=True)
 
 # --------------------------------------------------------------------------- #
-# Reproducibility
+# Reproducibility — Used for: same train/test splits, CV, noise, and SHAP sample
 # --------------------------------------------------------------------------- #
 RANDOM_SEED = 42
 
 # --------------------------------------------------------------------------- #
-# Data schema
+# Data schema — Used for: restricting scope to six IoT sensors (no extra columns)
 # --------------------------------------------------------------------------- #
 # The six low-cost BME280 environmental features that define the project scope.
 SENSOR_FEATURES = [
@@ -54,7 +57,8 @@ STAGE_LABELS = {
     5: "Stage 5 - Over-ripe (yellow with brown spots)",
 }
 
-# Physically plausible sensor ranges for range-validation (docs/03, Phase 1).
+# Used for: Data Explorer + Decision Support range checks (flags bad readings,
+# does not drop rows — offline QA only).
 VALID_RANGES = {
     "Temp-int": (5.0, 35.0),
     "Temp-ext": (5.0, 35.0),
@@ -64,14 +68,13 @@ VALID_RANGES = {
     "Press-ext": (900.0, 1050.0),
 }
 
-# Banana chilling-injury threshold (deg C) - used as a literature-grounded
-# knowledge-graph boundary (docs/04, Siddiqui et al. [1]).
-CHILLING_THRESHOLD_C = 13.0
-# Accelerated-ripening temperature (deg C) - Golding et al. [6].
-ACCEL_RIPENING_C = 20.0
+# Used for: fixed literature thresholds in KG rules R1–R3 (when within data range).
+CHILLING_THRESHOLD_C = 13.0  # Siddiqui et al. [1] — chilling slows ripening
+ACCEL_RIPENING_C = 20.0        # Golding et al. [6] — warmth accelerates ripening
 
 # --------------------------------------------------------------------------- #
 # Knowledge-graph rule specifications (docs/03 Phase 3, docs/04)
+# Used for: converting post-harvest literature into testable tabular features
 # --------------------------------------------------------------------------- #
 # Each rule becomes (after validation) up to three model features:
 #   1) binary activation flag
@@ -147,16 +150,16 @@ KG_INTERACTION_RULES = [
 ]
 
 # --------------------------------------------------------------------------- #
-# Rule validation thresholds (docs/03 Phase 3)
+# Rule validation thresholds — Used for: rejecting spurious / inactive KG rules
 # --------------------------------------------------------------------------- #
 MIN_ACTIVATION_RATE = 0.05   # rule must fire on >= 5% of training rows
-CHI2_ALPHA = 0.05            # chi-squared association significance level
+CHI2_ALPHA = 0.05            # chi-squared p-value cutoff (SciPy chi2_contingency)
 
 # --------------------------------------------------------------------------- #
-# Model hyper-parameter grids (kept compact for laptop-CPU runtime, docs/02)
+# Model hyper-parameter grids — Used for: GridSearchCV in train.py (Phase 4)
 # --------------------------------------------------------------------------- #
-CV_FOLDS = 5
-SCORING = "f1_macro"
+CV_FOLDS = 5                 # 5-fold cross-validation on training set only
+SCORING = "f1_macro"         # primary metric — treats all 5 ripeness stages equally
 
 # Grids are kept deliberately compact (bounded tree depth) so the full 5-fold
 # CV completes in a couple of minutes on a laptop CPU (docs/02 non-functional
@@ -173,10 +176,10 @@ XGB_GRID = {
     "learning_rate": [0.3],
 }
 
-# Number of test rows sampled for SHAP (speed vs. fidelity trade-off, docs/03).
+# Used for: RQ2 SHAP global importance (500 rows = fast on laptop CPU).
 SHAP_SAMPLE_SIZE = 500
 
-# Robustness sweep settings (docs/03 Phase 5).
+# Used for: RQ3 robustness harness — % of sensor range / % missing values to inject.
 NOISE_LEVELS = [0.05, 0.10, 0.20]
 MISSING_LEVELS = [0.05, 0.10, 0.20]
-ROBUSTNESS_THRESHOLD = 0.80  # macro-F1 must stay >= 80% of clean score
+ROBUSTNESS_THRESHOLD = 0.80  # report threshold: macro-F1 >= 80% of clean score

@@ -1,4 +1,8 @@
-"""Smoke tests for resubmission artefact requirements."""
+"""Smoke tests for resubmission artefact requirements.
+
+Used for: quick check that predict_compare, app pages, and model files exist
+before viva / Moodle upload. Run: py scripts/verify_resubmission.py
+"""
 from __future__ import annotations
 
 import json

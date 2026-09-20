@@ -11,6 +11,9 @@ not), and then opens the Streamlit app in the default browser.
 To reproduce the experiments instead of launching the dashboard, run:
 
     py -m src.run_pipeline
+
+Viva tip: tell examiner `py run_app.py` for demo, `py -m src.run_pipeline` to
+reproduce all numbers in the report (~4–5 min on laptop).
 """
 
 import importlib.util
@@ -21,8 +24,7 @@ import sys
 ROOT = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(ROOT, "outputs", "models")
 
-#: Import name -> pip requirement, for the packages the dashboard cannot start
-#: without.
+# Used for: pip install check — each key is import name, value is requirements.txt package
 CORE_PACKAGES = {
     "streamlit": "streamlit",
     "pandas": "pandas",
@@ -35,16 +37,18 @@ CORE_PACKAGES = {
     "shap": "shap",
 }
 
+# Used for: minimum model files before Streamlit can run Decision Support page
 REQUIRED_ARTEFACTS = ("scaler.pkl", "kg_generator.json", "baseline_rf.pkl",
                       "kg_rf.pkl")
 
 
 def say(message=""):
-    # Unbuffered so progress is visible even when output is piped to a log.
+    # Used for: unbuffered progress messages during setup (visible in terminal)
     print(message, flush=True)
 
 
 def check_python():
+    """Used for: enforce Python 3.11+ (matches project / university environment)."""
     if sys.version_info < (3, 11):
         say(f"Python 3.11 or newer is required (found {sys.version.split()[0]}).")
         sys.exit(1)
@@ -52,6 +56,7 @@ def check_python():
 
 
 def install_dependencies():
+    """Used for: auto pip install from requirements.txt if imports are missing."""
     missing = [pkg for mod, pkg in CORE_PACKAGES.items()
                if importlib.util.find_spec(mod) is None]
     if not missing:
@@ -69,6 +74,7 @@ def install_dependencies():
 
 
 def ensure_models():
+    """Used for: run full pipeline once if outputs/models/ artefacts are absent."""
     absent = [f for f in REQUIRED_ARTEFACTS
               if not os.path.exists(os.path.join(MODEL_DIR, f))]
     if not absent:
@@ -84,6 +90,7 @@ def ensure_models():
 
 
 def launch_app():
+    """Used for: start Streamlit on app.py at http://localhost:8501."""
     say("\nStarting the dashboard at http://localhost:8501")
     say("Press Ctrl+C in this window to stop it.\n")
     try:
@@ -94,6 +101,7 @@ def launch_app():
 
 
 def main():
+    """Used for: setup chain — Python check → deps → models → launch dashboard."""
     say("=" * 62)
     say("RipeSense - Knowledge-Integrated Banana Ripeness Prediction")
     say("=" * 62)

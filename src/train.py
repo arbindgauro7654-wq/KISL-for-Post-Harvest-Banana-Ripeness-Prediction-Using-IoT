@@ -8,38 +8,41 @@ Trains:
 
 Hyper-parameters are tuned with 5-fold cross-validation scored on macro-F1.
 Labels (stages 1-5) are encoded to 0-4 for compatibility with both estimators.
+
+Viva tip: four-model ablation isolates KG effect within each algorithm family (RQ1).
 """
 from __future__ import annotations
 
 import os
 
-import joblib
+import joblib       # Used for: save/load .pkl model artefacts for the app
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import GridSearchCV
-from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestClassifier  # Used for: bagging baseline + SHAP (kg_rf)
+from sklearn.model_selection import GridSearchCV     # Used for: 5-fold CV hyperparameter search
+from xgboost import XGBClassifier                    # Used for: best accuracy (gradient boosted trees)
 
 from . import config as C
 
 
 def _encode(y: pd.Series) -> np.ndarray:
-    """Stages 1-5 -> 0-4."""
+    """Used for: map ripeness stages 1–5 → 0–4 (sklearn/XGBoost class indices)."""
     return (y.values - 1).astype(int)
 
 
 def decode(pred_enc: np.ndarray) -> np.ndarray:
-    """0-4 -> stages 1-5."""
+    """Used for: map model output 0–4 → ripeness stages 1–5 for display/advice."""
     return (np.asarray(pred_enc) + 1).astype(int)
 
 
 def _make_rf() -> RandomForestClassifier:
-    # Single-threaded estimator; GridSearchCV provides the parallelism so we
-    # avoid nested-parallelism oversubscription on Windows.
+    """Used for: ensemble of decision trees — stable baseline, good for SHAP (RQ2)."""
+    # n_jobs=1 here — GridSearchCV parallelises folds; avoids Windows oversubscription.
     return RandomForestClassifier(random_state=C.RANDOM_SEED, n_jobs=1)
 
 
 def _make_xgb() -> XGBClassifier:
+    """Used for: gradient-boosted trees — highest test macro-F1 in this project."""
     return XGBClassifier(
         random_state=C.RANDOM_SEED,
         objective="multi:softprob",
@@ -51,6 +54,7 @@ def _make_xgb() -> XGBClassifier:
 
 
 def _tune(estimator, grid, X, y_enc):
+    """Used for: GridSearchCV with macro-F1 — picks best hyperparameters per model."""
     gs = GridSearchCV(
         estimator, grid, scoring=C.SCORING, cv=C.CV_FOLDS, n_jobs=-1, refit=True
     )
@@ -63,11 +67,12 @@ def _tune(estimator, grid, X, y_enc):
 
 
 def train_all(X_train_base, X_train_aug, y_train) -> dict:
-    """Train and tune all four models; return fitted models + CV metadata."""
+    """Used for: train all 4 models, save .pkl files, return CV metadata for report."""
     y_enc = _encode(y_train)
     models = {}
     cv_meta = {}
 
+    # Used for: four-model ablation — baseline (6 feat) vs KG-augmented (32 feat) × RF/XGB
     configs = [
         ("baseline_rf", _make_rf(), C.RF_GRID, X_train_base),
         ("kg_rf", _make_rf(), C.RF_GRID, X_train_aug),

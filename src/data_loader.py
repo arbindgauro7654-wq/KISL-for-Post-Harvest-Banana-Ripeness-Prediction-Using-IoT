@@ -4,22 +4,25 @@ Loads the Bath ds_34 split, restricts to the six BME280 features, performs
 range validation and z-score outlier flagging, and fits a min-max scaler on the
 training set only (no leakage). Class balance is reported; because the dataset
 is already perfectly balanced (docs/05), SMOTE is not applied.
+
+Viva tip: emphasise train-only scaler fit — prevents information leakage from
+test set into model inputs.
 """
 from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
 
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+import numpy as np       # Used for: z-score outlier counts
+import pandas as pd      # Used for: loading Bath CSV splits as DataFrames
+from sklearn.preprocessing import MinMaxScaler  # Used for: scale sensors to [0,1]
 
 from . import config as C
 
 
 @dataclass
 class DataBundle:
-    """Container for everything downstream phases need."""
+    """Used for: passing raw + scaled train/test frames and scaler to all pipeline phases."""
 
     X_train_raw: pd.DataFrame
     X_test_raw: pd.DataFrame
@@ -32,6 +35,7 @@ class DataBundle:
 
 
 def _read_split(split: str) -> tuple[pd.DataFrame, pd.Series]:
+    """Used for: loading ds_34_x_{train|test}.csv and matching labels (Bath dataset)."""
     x_path = os.path.join(C.DATA_DIR, f"ds_34_x_{split}.csv")
     y_path = os.path.join(C.DATA_DIR, f"ds_34_y_{split}.csv")
     X = pd.read_csv(x_path, index_col=0)
@@ -46,7 +50,7 @@ def _read_split(split: str) -> tuple[pd.DataFrame, pd.Series]:
 
 
 def _range_validation(X: pd.DataFrame) -> dict:
-    """Flag readings outside physically plausible ranges (does not drop them)."""
+    """Used for: QA report — count readings outside VALID_RANGES (does not drop them)."""
     flags = {}
     for col, (lo, hi) in C.VALID_RANGES.items():
         out = ((X[col] < lo) | (X[col] > hi)).sum()
@@ -55,6 +59,7 @@ def _range_validation(X: pd.DataFrame) -> dict:
 
 
 def _zscore_outliers(X: pd.DataFrame, z: float = 4.0) -> dict:
+    """Used for: EDA report — flag extreme values (|z| > 4), not used to filter rows."""
     counts = {}
     for col in X.columns:
         mu, sd = X[col].mean(), X[col].std(ddof=0)
@@ -66,6 +71,7 @@ def _zscore_outliers(X: pd.DataFrame, z: float = 4.0) -> dict:
 
 
 def load_data() -> DataBundle:
+    """Used for: Phase 1 entry point — called by run_pipeline and produces scaler.pkl."""
     X_train_raw, y_train = _read_split("train")
     X_test_raw, y_test = _read_split("test")
 
@@ -83,12 +89,12 @@ def load_data() -> DataBundle:
         "zscore_outliers_train": _zscore_outliers(X_train_raw),
     }
 
-    # Class-balance decision (docs/05): SMOTE only if a class < 10%.
+    # Used for: SMOTE decision — dataset already 20% per class, so no resampling.
     frac = y_train.value_counts(normalize=True)
     report["min_class_fraction"] = float(frac.min())
     report["smote_applied"] = bool(frac.min() < 0.10)
 
-    # Min-max scaling fitted on TRAIN only, reused on TEST (no leakage).
+    # Used for: MinMaxScaler — fit on TRAIN only, transform TEST with same bounds (no leakage).
     scaler = MinMaxScaler()
     X_train_scaled = pd.DataFrame(
         scaler.fit_transform(X_train_raw),
@@ -114,7 +120,7 @@ def load_data() -> DataBundle:
 
 
 def validate_sensor_row(values: dict) -> dict:
-    """Range-check one six-sensor reading (used by Decision Support UI)."""
+    """Used for: Decision Support UI — show in-range flags for manual/CSV sensor input."""
     out = {}
     for col, (lo, hi) in C.VALID_RANGES.items():
         v = float(values[col])
@@ -128,7 +134,7 @@ def validate_sensor_row(values: dict) -> dict:
 
 
 def feature_summary(X: pd.DataFrame) -> pd.DataFrame:
-    """Per-feature min/max/mean/std table (used by EDA and the app)."""
+    """Used for: slider defaults in app + feature_summary in model_results.json."""
     return pd.DataFrame(
         {
             "min": X.min(),

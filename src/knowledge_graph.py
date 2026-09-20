@@ -3,19 +3,22 @@
 Builds a directed graph of post-harvest domain triples (subject-predicate-object)
 and persists it to ``data/kg/nodes.csv`` and ``data/kg/edges.csv`` for inspection
 and for the Streamlit app.
+
+Viva tip: NetworkX here is for documentation/visualisation — the ML model uses
+the tabular flags from kg_features.py, not graph traversal at inference time.
 """
 from __future__ import annotations
 
 import os
 
-import networkx as nx
-import pandas as pd
+import networkx as nx   # Used for: directed graph of literature triples (DiGraph)
+import pandas as pd     # Used for: export nodes/edges CSV for Knowledge Graph page
 
 from . import config as C
 
 
 def build_graph() -> nx.DiGraph:
-    """Construct the post-harvest knowledge graph from the rule specifications."""
+    """Used for: turn KG_RULES + KG_INTERACTION_RULES into a visualisable triple graph."""
     G = nx.DiGraph()
 
     def _add(subject, predicate, obj, **attrs):
@@ -49,6 +52,7 @@ def build_graph() -> nx.DiGraph:
 
 
 def save_graph(G: nx.DiGraph) -> tuple[str, str]:
+    """Used for: persist nodes.csv / edges.csv under data/kg/ for the app."""
     nodes = pd.DataFrame(
         [{"node": n, **d} for n, d in G.nodes(data=True)]
     )

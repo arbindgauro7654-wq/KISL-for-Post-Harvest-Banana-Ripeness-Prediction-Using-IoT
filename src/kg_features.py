@@ -9,6 +9,9 @@ Rules are validated on the TRAINING set only: a rule is kept if its activation
 rate >= 5% AND a chi-squared test shows a significant association (p < 0.05)
 with the ripeness label. The generator is fittable/serialisable so the same
 thresholds are reused at inference time in the Streamlit app.
+
+Viva tip: this is knowledge *integration* (extra columns), not a separate
+expert system — the tree model still learns from data.
 """
 from __future__ import annotations
 
@@ -16,13 +19,13 @@ import json
 
 import numpy as np
 import pandas as pd
-from scipy.stats import chi2_contingency
+from scipy.stats import chi2_contingency  # Used for: rule–label association test (p < 0.05)
 
 from . import config as C
 
 
 def _resolve_threshold(series: pd.Series, q: float, fixed) -> float:
-    """Published threshold preferred when within observed range, else quantile."""
+    """Used for: prefer published literature threshold when inside observed range, else quantile."""
     quantile_val = float(series.quantile(q))
     if fixed is not None and series.min() <= fixed <= series.max():
         return float(fixed)
@@ -30,11 +33,12 @@ def _resolve_threshold(series: pd.Series, q: float, fixed) -> float:
 
 
 def _condition(series: pd.Series, op: str, thr: float) -> pd.Series:
+    """Used for: boolean mask — is sensor reading above/below rule threshold?"""
     return (series > thr) if op == ">" else (series < thr)
 
 
 def _risk(series: pd.Series, op: str, thr: float) -> pd.Series:
-    """How far past the boundary (>=0), capped for stability."""
+    """Used for: continuous risk_R* feature — distance past threshold, capped at 5.0."""
     eps = 1e-9
     if op == ">":
         r = (series - thr) / (abs(thr) + eps)
@@ -44,16 +48,17 @@ def _risk(series: pd.Series, op: str, thr: float) -> pd.Series:
 
 
 class KGFeatureGenerator:
-    """Fit thresholds + validate rules on train; transform any sensor frame."""
+    """Used for: fit once on train (validate rules), transform at train/test/inference."""
 
     def __init__(self):
         self.rules: list[dict] = []          # accepted simple rules (with thr)
-        self.interactions: list[dict] = []   # accepted interaction rules
-        self.validation_log: list[dict] = []
-        self.feature_names: list[str] = []
+        self.interactions: list[dict] = []   # accepted interaction rules (R13–R15)
+        self.validation_log: list[dict] = [] # shown on Knowledge Graph app page
+        self.feature_names: list[str] = []   # e.g. flag_R1, risk_R1, kg_violation_count
 
     # ------------------------------------------------------------------ fit #
     def fit(self, X_train_raw: pd.DataFrame, y_train: pd.Series) -> "KGFeatureGenerator":
+        """Used for: learn thresholds + chi-squared gate on training data only."""
         self.rules = []
         self.interactions = []
         self.validation_log = []
@@ -87,6 +92,7 @@ class KGFeatureGenerator:
         return self
 
     def _validate(self, rule_id, cond, y_train, spec, thr) -> dict:
+        """Used for: accept rule if activation >= 5% AND chi-squared p < 0.05 vs label."""
         activation = float(cond.mean())
         accepted = activation >= C.MIN_ACTIVATION_RATE
         p_value = None
@@ -94,7 +100,7 @@ class KGFeatureGenerator:
         if not accepted:
             reason = f"activation {activation:.3f} < {C.MIN_ACTIVATION_RATE}"
         else:
-            # chi-squared association between rule activation and label
+            # Used for: chi-squared test — is rule firing associated with ripeness stage?
             table = pd.crosstab(cond, y_train)
             if table.shape[0] < 2:
                 accepted = False
@@ -121,6 +127,7 @@ class KGFeatureGenerator:
 
     # ------------------------------------------------------------ transform #
     def transform(self, X_raw: pd.DataFrame) -> pd.DataFrame:
+        """Used for: build flag_*, risk_*, kg_violation_count columns from raw sensors."""
         out = pd.DataFrame(index=X_raw.index)
         violation = pd.Series(0, index=X_raw.index, dtype=float)
 
@@ -142,10 +149,7 @@ class KGFeatureGenerator:
         return out[self.feature_names]
 
     def fired_rules(self, row: dict) -> list[dict]:
-        """Return the list of rules that fire for a single raw sensor reading.
-
-        Used by the decision-support tool and the app to explain a prediction.
-        """
+        """Used for: Decision Support — list which literature rules fired for one reading."""
         fired = []
         for r in self.rules:
             val = row[r["subject"]]
@@ -186,6 +190,7 @@ class KGFeatureGenerator:
         }
 
     def save(self, path: str) -> None:
+        """Used for: kg_generator.json — same thresholds at app inference as in training."""
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2)
 
@@ -204,6 +209,6 @@ class KGFeatureGenerator:
 def build_augmented(generator: KGFeatureGenerator,
                     X_sensors_scaled: pd.DataFrame,
                     X_raw: pd.DataFrame) -> pd.DataFrame:
-    """Concatenate the six scaled sensors with KG features (computed from raw)."""
+    """Used for: 6 scaled sensors + KG columns → 32-feature matrix for kg_rf / kg_xgb."""
     kg = generator.transform(X_raw)
     return pd.concat([X_sensors_scaled, kg], axis=1)

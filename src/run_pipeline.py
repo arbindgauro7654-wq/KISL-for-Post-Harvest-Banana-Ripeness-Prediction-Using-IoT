@@ -2,6 +2,9 @@
 
 Run with:  py -m src.run_pipeline
 Produces all artefacts under outputs/ that the Streamlit app consumes.
+
+Viva tip: walk through Phase 1→6 in order — each phase maps to a report section
+and to folders under outputs/models, outputs/results, outputs/figures.
 """
 from __future__ import annotations
 
@@ -9,7 +12,7 @@ import json
 import os
 import time
 
-import joblib
+import joblib  # Used for: persist scaler.pkl and trained .pkl models
 import pandas as pd
 
 from . import config as C
@@ -29,12 +32,13 @@ def _save_json(obj, name):
 
 
 def main():
+    """Used for: single command to reproduce all experiments and app artefacts."""
     t0 = time.time()
     print("=" * 70)
     print("Knowledge-Integrated Banana Ripeness Pipeline")
     print("=" * 70)
 
-    # ----- Phase 1: data ------------------------------------------------- #
+    # ----- Phase 1: data — load Bath CSV, scale, write scaler.pkl ---------------- #
     print("[Phase 1] Loading & preprocessing data ...")
     data = load_data()
     _save_json(data.report, "data_report.json")
@@ -42,11 +46,11 @@ def main():
     print(f"  train={data.report['n_train']} test={data.report['n_test']} "
           f"smote_applied={data.report['smote_applied']}")
 
-    # ----- Phase 2: EDA -------------------------------------------------- #
+    # ----- Phase 2: EDA — class balance, correlation, box plots ---------------- #
     print("[Phase 2] Exploratory data analysis ...")
     eda_summary = edamod.run_eda(data.X_train_raw, data.y_train)
 
-    # ----- Phase 3: KG + features --------------------------------------- #
+    # ----- Phase 3: KG — NetworkX graph + validated tabular KG features -------- #
     print("[Phase 3] Building knowledge graph & features ...")
     G = kgmod.build_graph()
     kgmod.save_graph(G)
@@ -64,7 +68,7 @@ def main():
     X_train_aug = build_augmented(generator, data.X_train_scaled, data.X_train_raw)
     X_test_aug = build_augmented(generator, data.X_test_scaled, data.X_test_raw)
 
-    # ----- Phase 4: training -------------------------------------------- #
+    # ----- Phase 4: training — 4-model ablation (RF/XGB × baseline/KG) --------- #
     print("[Phase 4] Training & tuning 4 models (5-fold CV) ...")
     trained = trainmod.train_all(data.X_train_scaled, X_train_aug, data.y_train)
     models = trained["models"]
@@ -76,7 +80,7 @@ def main():
         "kg_xgb": (X_train_aug, X_test_aug, True),
     }
 
-    # ----- Phase 5: evaluation ------------------------------------------ #
+    # ----- Phase 5: evaluation — metrics, McNemar (RQ1), SHAP (RQ2), robust (RQ3) #
     print("[Phase 5] Evaluation (RQ1 metrics, confusion, comparison) ...")
     results = {}
     for name, model in models.items():
@@ -92,7 +96,7 @@ def main():
 
     comp_df = ev.comparison_fig(results)
 
-    # RQ1 significance: baseline vs KG within each algorithm
+    # Used for: RQ1 — McNemar paired test baseline vs KG within RF and XGB families
     mcnemar = {
         "rf_baseline_vs_kg": ev.mcnemar_test(
             models["baseline_rf"], data.X_test_scaled,
@@ -102,7 +106,7 @@ def main():
             models["kg_xgb"], X_test_aug, data.y_test),
     }
 
-    # ----- RQ2: SHAP importance + alignment ----------------------------- #
+    # Used for: RQ2 — SHAP on kg_rf vs baseline_rf + literature alignment score
     print("[Phase 5] SHAP interpretability & rule alignment (RQ2) ...")
     sample = X_test_aug.sample(min(C.SHAP_SAMPLE_SIZE, len(X_test_aug)),
                                random_state=C.RANDOM_SEED)
@@ -113,7 +117,7 @@ def main():
     alignment = ev.rule_alignment_score(generator, shap_kg["importance"])
     _save_json({"kg_rf": alignment}, "rq2_alignment.json")
 
-    # ----- RQ3: robustness ---------------------------------------------- #
+    # Used for: RQ3 — noise, missing values, dual temperature sensor failure
     print("[Phase 5] Robustness stress-tests (RQ3) ...")
     train_ranges = {c: float(data.X_train_raw[c].max() - data.X_train_raw[c].min())
                     for c in C.SENSOR_FEATURES}
@@ -132,7 +136,7 @@ def main():
     _save_json(robustness, "robustness.json")
     _robustness_fig(robustness)
 
-    # ----- Phase 6: decision-support demo ------------------------------- #
+    # ----- Phase 6: decision-support demo — sample predictions + advice ---------- #
     print("[Phase 6] Decision-support demo ...")
     best_kg_model = models["kg_rf"]
     demo_rows = data.X_test_raw.sample(5, random_state=C.RANDOM_SEED)

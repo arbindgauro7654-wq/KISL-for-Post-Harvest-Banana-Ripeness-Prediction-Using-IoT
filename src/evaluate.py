@@ -3,6 +3,8 @@
 Computes RQ1 metrics (+ McNemar significance), RQ2 SHAP-based interpretability
 alignment, and renders figures (confusion matrices, model comparison, SHAP
 importance). Falls back to impurity-based importance if SHAP fails.
+
+Viva tip: RQ1 = McNemar (accuracy gain?), RQ2 = SHAP + alignment, figures feed app.
 """
 from __future__ import annotations
 
@@ -10,13 +12,13 @@ import json
 import os
 
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # Used for: headless PNG export (no GUI window on server/CI)
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
+import seaborn as sns  # Used for: confusion matrix heatmaps and bar charts
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
-                             precision_score, recall_score)
+                             precision_score, recall_score)  # Used for: RQ1 test metrics
 
 from . import config as C
 from .train import _encode, decode
@@ -25,9 +27,10 @@ sns.set_theme(style="whitegrid")
 
 
 # --------------------------------------------------------------------------- #
-# RQ1 - classification metrics
+# RQ1 - classification metrics (accuracy, macro-F1 on held-out test set)
 # --------------------------------------------------------------------------- #
 def classification_metrics(model, X, y_true) -> dict:
+    """Used for: test-set performance table in Model Results page + model_results.json."""
     y_enc = _encode(y_true)
     pred = model.predict(X)
     return {
@@ -39,16 +42,16 @@ def classification_metrics(model, X, y_true) -> dict:
 
 
 def mcnemar_test(model_a, X_a, model_b, X_b, y_true) -> dict:
-    """McNemar test comparing two classifiers' correctness on the same rows."""
+    """Used for: RQ1 — paired test: is KG significantly better than baseline? (p ≈ 0.52 → no)."""
     y_enc = _encode(y_true)
     pa = model_a.predict(X_a) == y_enc
     pb = model_b.predict(X_b) == y_enc
-    b = int(np.sum(pa & ~pb))   # A right, B wrong
-    c = int(np.sum(~pa & pb))   # A wrong, B right
+    b = int(np.sum(pa & ~pb))   # baseline correct, KG wrong (discordant pairs)
+    c = int(np.sum(~pa & pb))   # baseline wrong, KG correct
     n = b + c
     if n == 0:
         return {"b": b, "c": c, "statistic": 0.0, "p_value": 1.0, "significant": False}
-    # continuity-corrected chi-squared with 1 dof
+    # Used for: continuity-corrected chi-squared — McNemar statistic, 1 degree of freedom
     stat = (abs(b - c) - 1) ** 2 / n
     from scipy.stats import chi2
     p = float(chi2.sf(stat, df=1))
@@ -57,6 +60,7 @@ def mcnemar_test(model_a, X_a, model_b, X_b, y_true) -> dict:
 
 
 def confusion_fig(model, X, y_true, title, fname):
+    """Used for: confusion_*.png — which stages get confused on test set."""
     y_enc = _encode(y_true)
     cm = confusion_matrix(y_enc, model.predict(X))
     fig, ax = plt.subplots(figsize=(6, 5))
@@ -71,6 +75,7 @@ def confusion_fig(model, X, y_true, title, fname):
 
 
 def comparison_fig(results: dict):
+    """Used for: model_comparison.png — bar chart baseline vs KG for all four models."""
     rows = []
     for name, m in results.items():
         rows.append({"model": name, **{k: m["test"][k] for k in
@@ -93,12 +98,12 @@ def comparison_fig(results: dict):
 # RQ2 - SHAP interpretability + alignment with agronomic rules
 # --------------------------------------------------------------------------- #
 def shap_importance(model, X_sample: pd.DataFrame, tag: str) -> dict:
-    """Mean |SHAP| per feature; falls back to impurity importance on failure."""
+    """Used for: global feature importance via SHAP TreeExplainer (RQ2 Interpretability page)."""
     importances = None
     method = "shap"
     try:
         import shap
-        explainer = shap.TreeExplainer(model)
+        explainer = shap.TreeExplainer(model)  # Used for: tree-specific fast SHAP values
         sv = explainer.shap_values(X_sample)
         arr = np.array(sv)
         # multiclass shapes: (classes, n, feats) or (n, feats, classes)
@@ -131,11 +136,7 @@ def shap_importance(model, X_sample: pd.DataFrame, tag: str) -> dict:
 
 
 def rule_alignment_score(generator, importance: dict) -> dict:
-    """RQ2: fraction of KG rules whose flag feature is an influential predictor.
-
-    A rule is 'aligned' if its activation flag has non-trivial importance and the
-    rule carries a directional (non-neutral) agronomic expectation.
-    """
+    """Used for: RQ2 — fraction of directional KG rules whose flag_* ranks above median SHAP."""
     if not importance:
         return {"alignment_score": 0.0, "checked": 0, "aligned": 0, "details": []}
     vals = np.array(list(importance.values()))

@@ -2,6 +2,8 @@
 
 Produces per-stage box plots, a correlation heatmap, a class-distribution chart,
 per-stage statistics and quartile boundaries that inform KG thresholds.
+
+Viva tip: EDA justifies no SMOTE (balanced classes) and shows sensor–stage patterns.
 """
 from __future__ import annotations
 
@@ -9,10 +11,10 @@ import json
 import os
 
 import matplotlib
-matplotlib.use("Agg")
+matplotlib.use("Agg")  # Used for: save PNG figures without opening a window
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
+import seaborn as sns  # Used for: box plots, bar charts, correlation heatmap
 
 from . import config as C
 
@@ -20,10 +22,11 @@ sns.set_theme(style="whitegrid")
 
 
 def run_eda(X_raw: pd.DataFrame, y: pd.Series) -> dict:
+    """Used for: Phase 2 — writes figures/ + eda_summary.json for Data Explorer page."""
     df = X_raw.copy()
     df[C.LABEL_NAME] = y.values
 
-    # ---- class distribution ---- #
+    # Used for: prove 20% per class — no SMOTE needed (see data_report.json)
     fig, ax = plt.subplots(figsize=(7, 4.5))
     counts = y.value_counts().sort_index()
     sns.barplot(x=counts.index, y=counts.values, hue=counts.index,
@@ -35,7 +38,7 @@ def run_eda(X_raw: pd.DataFrame, y: pd.Series) -> dict:
     fig.savefig(os.path.join(C.FIG_DIR, "class_distribution.png"), dpi=130)
     plt.close(fig)
 
-    # ---- correlation heatmap ---- #
+    # Used for: show redundancy among BME280 channels (internal vs external pairs)
     fig, ax = plt.subplots(figsize=(7, 6))
     corr = X_raw.corr()
     sns.heatmap(corr, annot=True, fmt=".2f", cmap="coolwarm", center=0,
@@ -45,7 +48,7 @@ def run_eda(X_raw: pd.DataFrame, y: pd.Series) -> dict:
     fig.savefig(os.path.join(C.FIG_DIR, "correlation_heatmap.png"), dpi=130)
     plt.close(fig)
 
-    # ---- per-stage box plots ---- #
+    # Used for: visualise how each sensor shifts across ripeness stages 1–5
     fig, axes = plt.subplots(2, 3, figsize=(15, 8))
     for ax, col in zip(axes.flat, C.SENSOR_FEATURES):
         sns.boxplot(data=df, x=C.LABEL_NAME, y=col, hue=C.LABEL_NAME,
@@ -57,7 +60,7 @@ def run_eda(X_raw: pd.DataFrame, y: pd.Series) -> dict:
     fig.savefig(os.path.join(C.FIG_DIR, "sensor_by_stage.png"), dpi=130)
     plt.close(fig)
 
-    # ---- numeric summaries ---- #
+    # Used for: quartiles + per-stage stats feed KG threshold discussion (dissertation §3.8)
     per_stage_mean = df.groupby(C.LABEL_NAME)[C.SENSOR_FEATURES].mean().round(3)
     per_stage_std = df.groupby(C.LABEL_NAME)[C.SENSOR_FEATURES].std().round(3)
     quartiles = {
