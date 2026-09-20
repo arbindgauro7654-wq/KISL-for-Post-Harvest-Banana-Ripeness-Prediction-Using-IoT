@@ -1016,7 +1016,7 @@ elif PAGE == "Decision Support":
             st.stop()
         options = [
             f"Row {r.row_id} · actual stage {int(r[C.LABEL_NAME])}"
-            for r in samples.itertuples()
+            for _, r in samples.iterrows()
         ]
         pick = st.selectbox("Test sample (ground truth for demo only)", options)
         idx = options.index(pick)
